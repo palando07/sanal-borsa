@@ -60,15 +60,17 @@ def warm_up():
 
 def chart(sym):
     last_err = None
-    for attempt, host in enumerate(("query1", "query2", "query1")):
+    for attempt, host in enumerate(("query1", "query2")):
         url = f"https://{host}.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range=5d&interval=30m"
         try:
-            with OPENER.open(url, timeout=20) as r:
+            with OPENER.open(url, timeout=10) as r:
                 return json.load(r)["chart"]["result"][0]
         except Exception as e:  # noqa: BLE001
             last_err = e
-            time.sleep(2 * (attempt + 1))
+            time.sleep(0.5)
     FAILS.append(f"{sym}: {last_err}")
+    if len(FAILS) <= 3 and os.environ.get("GITHUB_ACTIONS"):
+        print(f"::warning::{sym} alınamadı: {last_err}", flush=True)
     print(f"atlandı: {sym} ({last_err})", file=sys.stderr)
     return None
 
