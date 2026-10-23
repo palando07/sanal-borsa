@@ -21,7 +21,7 @@ BIST = [
     ("EREGL", "Ereğli Demir Çelik"), ("FROTO", "Ford Otosan"), ("GARAN", "Garanti BBVA"),
     ("GUBRF", "Gübre Fabrikaları"), ("HALKB", "Halkbank"), ("HEKTS", "Hektaş"),
     ("ISCTR", "İş Bankası (C)"), ("KCHOL", "Koç Holding"), ("KONTR", "Kontrolmatik"),
-    ("KOZAL", "Koza Altın"), ("KRDMD", "Kardemir (D)"), ("MGROS", "Migros"),
+    ("KRDMD", "Kardemir (D)"), ("MGROS", "Migros"),
     ("OYAKC", "Oyak Çimento"), ("PETKM", "Petkim"), ("PGSUS", "Pegasus"),
     ("SAHOL", "Sabancı Holding"), ("SASA", "SASA Polyester"), ("SISE", "Şişecam"),
     ("TAVHL", "TAV Havalimanları"), ("TCELL", "Turkcell"), ("THYAO", "Türk Hava Yolları"),

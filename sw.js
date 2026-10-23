@@ -1,5 +1,5 @@
 // Uygulamayı çevrimdışı da açılabilir kılan basit önbellek
-const CACHE = 'sanal-borsa-v1';
+const CACHE = 'sanal-borsa-v2';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -10,7 +10,8 @@ self.addEventListener('activate', e => {
 });
 // Önce ağdan dene (güncel sürüm gelsin), ağ yoksa önbellekten aç
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
+  // Fiyat istekleri (GitHub, Binance) önbelleğe alınmaz; uygulama son fiyatları kendisi saklar
+  if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
     fetch(e.request).then(res => {
       const copy = res.clone();

@@ -21,11 +21,6 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Yahoo erişim kontrolü
-        run: |
-          for u in "https://query1.finance.yahoo.com/v8/finance/chart/THYAO.IS?range=1d&interval=30m" "https://query2.finance.yahoo.com/v8/finance/chart/AAPL?range=1d&interval=30m"; do
-            c=$(curl -s -m 10 -A "Mozilla/5.0" -o body.txt -w '%{http_code}' "$u"); echo "::notice::$c $(head -c 150 body.txt | tr -d '\n')"
-          done
       - name: Fiyatları çek
         run: mkdir -p out && python3 scripts/fetch_prices.py out/prices.json
       - name: data dalına yaz

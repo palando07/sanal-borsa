@@ -1,20 +1,22 @@
 # Sanal Borsa
 
-Sanal parayla hisse senedi, kripto, altın ve döviz alıp satabileceğin, işlemlerinin gidişatını izleyebileceğin tek sayfalık bir web uygulaması.
+Gerçek piyasa fiyatlarıyla, sanal parayla hisse senedi, kripto, altın ve döviz alıp satabileceğin; işlemlerinin gidişatını izleyebileceğin web uygulaması. Telefona "ana ekrana ekle" ile uygulama olarak kurulabilir.
+
+Adres: https://palando07.github.io/sanal-borsa/
 
 ## Özellikler
 
-- 100.000 ₺ sanal başlangıç parası
-- 20 varlık: 10 BIST hissesi, 5 ABD hissesi, Bitcoin, Ethereum, Solana, gram altın, ABD doları
-- Fiyatlar birkaç saniyede bir güncellenir (durdurma ve 5 kat hızlandırma seçeneği var)
-- Adet veya TL tutarıyla alış/satış, %0,1 komisyon
+- 100.000 ₺ sanal başlangıç parası, %0,1 komisyon
+- 36 BIST hissesi, 17 ABD hissesi, 8 kripto para, dolar, euro, gram altın ve gram gümüş; üstte BIST 100 endeksi
+- Adet veya TL tutarıyla alış/satış
 - Portföy değeri grafiği, pozisyon bazında kâr/zarar, gerçekleşen K/Z ve işlem geçmişi
-- Veriler tarayıcıda (localStorage) saklanır
+- Portföy yalnızca kullanılan cihazda (tarayıcıda) saklanır
 
-## Önemli
+## Fiyatlar nereden geliyor
 
-Fiyatlar gerçek piyasa verisi değildir. Gerçeğe yakın başlangıç değerlerinden yola çıkan bir simülasyonla hareket eder. Yabancı varlıklar simüle edilen USD/TRY kuruyla TL'ye çevrilir.
+- **Hisse, döviz, altın:** `.github/workflows/prices.yml` her 10 dakikada bir `scripts/fetch_prices.py` dosyasını çalıştırır. Betik Yahoo Finance'ten son 5 günün fiyatlarını alıp `data` dalındaki `prices.json` dosyasına yazar; uygulama bu dosyayı okur. Borsa verileri ayrıca 15 dakikaya kadar gecikmeli olabilir.
+- **Kripto:** Uygulama Binance'ten 15 saniyede bir canlı fiyat alır. Binance'e ulaşılamazsa 10 dakikalık veriler kullanılır.
+- Gram altın ve gümüş, ons fiyatı × USD/TRY ÷ 31,10 ile hesaplanır.
+- Piyasa kapalıyken işlemler son fiyattan gerçekleşir.
 
-## Çalıştırma
-
-Kurulum gerekmez: `index.html` dosyasını tarayıcıda açman yeterli.
+GitHub, 60 gün boyunca hiç commit gelmeyen herkese açık depolarda zamanlanmış iş akışlarını durdurur. Fiyatlar güncellenmeyi bırakırsa Actions sekmesinden iş akışını yeniden etkinleştirmek yeterli.
