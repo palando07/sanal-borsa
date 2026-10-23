@@ -3,7 +3,9 @@
 Kullanım: python3 scripts/fetch_prices.py out/prices.json
 Alınamayan semboller atlanır; uygulama yalnızca dosyada olanları gösterir.
 """
+import http.cookiejar
 import json
+import os
 import sys
 import time
 import urllib.parse
@@ -41,17 +43,32 @@ CRYPTO = [
 UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 
 
+# Yahoo bazı sunuculardan gelen çerezsiz istekleri reddediyor; önce çerez alıyoruz
+JAR = http.cookiejar.CookieJar()
+OPENER = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(JAR))
+OPENER.addheaders = [("User-Agent", UA), ("Accept", "application/json,text/html;q=0.9,*/*;q=0.8"), ("Accept-Language", "en-US,en;q=0.9")]
+FAILS = []
+
+
+def warm_up():
+    for url in ("https://fc.yahoo.com/", "https://finance.yahoo.com/"):
+        try:
+            OPENER.open(url, timeout=15).read(1000)
+        except Exception:  # noqa: BLE001  (fc.yahoo.com 404 döner ama çerezi bırakır)
+            pass
+
+
 def chart(sym):
     last_err = None
-    for host in ("query1", "query2"):
+    for attempt, host in enumerate(("query1", "query2", "query1")):
         url = f"https://{host}.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range=5d&interval=30m"
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA})
-            with urllib.request.urlopen(req, timeout=20) as r:
+            with OPENER.open(url, timeout=20) as r:
                 return json.load(r)["chart"]["result"][0]
         except Exception as e:  # noqa: BLE001
             last_err = e
-            time.sleep(1)
+            time.sleep(2 * (attempt + 1))
+    FAILS.append(f"{sym}: {last_err}")
     print(f"atlandı: {sym} ({last_err})", file=sys.stderr)
     return None
 
@@ -75,6 +92,8 @@ def parse(r):
 
 
 def main(out):
+    warm_up()
+    print(f"çerez: {len(JAR)} adet")
     assets = {}
 
     def add(code, name, cat, cur, yahoo, **extra):
@@ -109,7 +128,11 @@ def main(out):
                 "h": [[t, round(c * k, 4)] for t, c in d["h"]],
             }
 
+    if FAILS and os.environ.get("GITHUB_ACTIONS"):
+        print(f"::warning::{len(FAILS)} sembol alınamadı. İlki: {FAILS[0]}")
     if "USD" not in assets or len(assets) < 10:
+        if os.environ.get("GITHUB_ACTIONS"):
+            print(f"::error::Yeterli veri alınamadı ({len(assets)} varlık). Örnek hata: {FAILS[:3]}")
         sys.exit(f"Yeterli veri alınamadı ({len(assets)} varlık); eski dosya korunuyor.")
 
     data = {"updated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "assets": assets}
