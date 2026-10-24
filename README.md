@@ -9,6 +9,10 @@ Adres: https://palando07.github.io/sanal-borsa/
 - 100.000 ₺ sanal başlangıç parası, %0,1 komisyon
 - 36 BIST hissesi, 17 ABD hissesi, 8 kripto para, dolar, euro, gram altın ve gram gümüş; üstte BIST 100 endeksi
 - Adet veya TL tutarıyla alış/satış; piyasa, limit ve stop (zarar durdur) emirleri
+- İzleme listesi (☆) ve fiyat alarmları (uygulama açıkken bildirim)
+- Hisse bilgi kartı: önceki kapanış, gün ve 52 haftalık aralık, hacim
+- Rehber: temel kavramlar
+- Portföy yedeği alma ve geri yükleme (JSON dosyası)
 - Haberler: Google Haberler'den piyasa gündemi, portföydeki varlıkların ve her hissenin son haberleri (yarım saatte bir)
 - Yatırım günlüğü: her işleme "neden" notu; Performans sekmesinde alış ve satış gerekçeleri sonuçla yan yana
 - Portföyü BIST 100 ile karşılaştıran grafik, performans sekmesi ve aylık getiri
