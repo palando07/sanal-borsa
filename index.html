@@ -141,9 +141,20 @@ canvas{display:block;width:100%}
 .err{color:var(--down);font-size:12px;min-height:1em}
 .pos{font-size:13px;color:var(--muted)}
 .pos b{color:var(--fg);font-weight:600}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:16px;height:0;border-top:2px solid var(--up);vertical-align:middle;margin-right:6px}
+.legend i.bm{border-top:2px dashed var(--accent)}
+.perf{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border-bottom:1px solid var(--line)}
+.perf .k{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin:0 -1px -1px 0}
+.perf .k .lbl{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.perf .k .val{font-family:var(--font-num);font-size:16px;font-weight:500;margin-top:2px}
+.perf .k .sub{font-size:12px;color:var(--muted)}
+.sect{padding:10px 14px 4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.xbtn{border:1px solid var(--line);background:transparent;border-radius:6px;padding:3px 9px;font-size:12px;font-family:var(--font-ui)}
+.st{font-family:var(--font-ui);font-size:12px}
 
 /* Alt sekmeler */
-.tabs{display:flex;gap:4px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
 .tabs button{border:0;background:transparent;padding:6px 10px;border-radius:6px;font-weight:600;color:var(--muted)}
 .tabs button[aria-selected="true"]{background:var(--sunk);color:var(--fg)}
 .tblwrap{overflow-x:auto}
@@ -205,6 +216,7 @@ tbody tr.click:hover{background:var(--sunk)}
     <div class="chartbox">
       <div class="hd"><span>Portföy değerinin seyri</span><span class="num" id="pvRange"></span></div>
       <canvas id="pvChart" aria-label="Portföy değeri grafiği" role="img"></canvas>
+      <div class="legend" id="pvLegend" hidden><span><i></i>Portföyün</span><span><i class="bm"></i>Aynı parayla BIST 100</span></div>
       <div class="chartempty" id="pvEmpty" hidden>İlk işlemini yaptıktan sonra portföyünün değeri burada zamanla çizilecek.</div>
     </div>
   </section>
@@ -244,6 +256,18 @@ tbody tr.click:hover{background:var(--sunk)}
           </div>
           <div class="field">
             <div class="lblrow">
+              <label>Emir tipi</label>
+              <div class="seg" role="group" aria-label="Emir tipi" id="otype">
+                <button type="button" data-o="mkt" aria-pressed="true">Piyasa</button>
+                <button type="button" data-o="lmt" aria-pressed="false">Limit</button>
+                <button type="button" data-o="stp" aria-pressed="false">Stop</button>
+              </div>
+            </div>
+            <div class="pos" id="oHint" hidden></div>
+            <div class="inp" id="oprBox" hidden><input id="opr" inputmode="decimal" autocomplete="off" placeholder="Tetik fiyatı" aria-label="Tetik fiyatı"><span id="oprUnit">₺</span></div>
+          </div>
+          <div class="field">
+            <div class="lblrow">
               <label for="qty" id="qtyLbl">Adet</label>
               <div class="seg" role="group" aria-label="Giriş türü">
                 <button type="button" id="modeQ" data-m="q" aria-pressed="true">Adet</button>
@@ -276,16 +300,20 @@ tbody tr.click:hover{background:var(--sunk)}
     <div class="hd">
       <div class="tabs" role="tablist">
         <button role="tab" id="tabH" aria-selected="true">Portföyüm</button>
+        <button role="tab" id="tabO" aria-selected="false">Emirler</button>
+        <button role="tab" id="tabP" aria-selected="false">Performans</button>
         <button role="tab" id="tabT" aria-selected="false">İşlem geçmişi</button>
       </div>
       <span class="muted" id="tabNote"></span>
     </div>
     <div id="paneH"></div>
+    <div id="paneO" hidden></div>
+    <div id="paneP" hidden></div>
     <div id="paneT" hidden></div>
   </section>
 
   <footer class="foot">
-    <p>Hisse, döviz ve altın fiyatları Yahoo Finance'ten yaklaşık 10 dakikada bir alınır; borsa verileri ayrıca 15 dakikaya kadar gecikmeli olabilir. Kripto fiyatları Binance'ten canlı gelir. Piyasa kapalıyken işlemler son fiyattan gerçekleşir. Yabancı varlıklar güncel USD/TRY kuruyla TL'ye çevrilir. Portföyün yalnızca bu cihazda saklanır.</p>
+    <p>Hisse, döviz ve altın fiyatları Yahoo Finance'ten yaklaşık 5 dakikada bir alınır; borsa verileri ayrıca 15 dakikaya kadar gecikmeli olabilir. Kripto fiyatları Binance'ten canlı gelir. Piyasa kapalıyken işlemler son fiyattan gerçekleşir. Limit ve stop emirleri uygulama her açıldığında ve fiyat her güncellendiğinde kontrol edilir; uygulama kapalıyken fiyat emrin seviyesine geldiyse emir o seviyeden gerçekleşir. Yabancı varlıklar güncel USD/TRY kuruyla TL'ye çevrilir. Portföyün yalnızca bu cihazda saklanır.</p>
     <span id="resetBox"></span>
   </footer>
 </div>
@@ -310,9 +338,10 @@ const priceFmt=p=>p<1?f4.format(p):p<10?nf(2,3).format(p):f2.format(p);
 const $=id=>document.getElementById(id);
 
 // ---- Durum (portföy) ----
-function fresh(){return {cash:START_CASH,hold:{},trades:[],pv:[],realized:0,sel:'THYAO',started:Date.now()}}
+function fresh(){return {cash:START_CASH,hold:{},trades:[],pv:[],realized:0,sel:'THYAO',started:Date.now(),orders:[],olog:[]}}
 let S; try{S=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){S=null}
 if(!S||!S.hold)S=fresh();
+if(!S.orders)S.orders=[]; if(!S.olog)S.olog=[];
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 
 // ---- Piyasa verisi ----
@@ -360,11 +389,12 @@ async function loadCrypto(){
     });
     cryptoLive=true;
   }catch(e){cryptoLive=false}
+  checkOrders();
   renderAll(true);
 }
 
 // ---- Liste ----
-let filter='Tümü', query='', side='buy', mode='q';
+let filter='Tümü', query='', side='buy', mode='q', otype='mkt';
 const rows={};
 function buildFilters(){$('filters').innerHTML=CATS.map(c=>`<button class="chip" type="button" data-c="${c}" aria-pressed="${c===filter}">${c}</button>`).join('')}
 $('filters').addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(!b)return;filter=b.dataset.c;buildFilters();applyFilter()});
@@ -420,7 +450,7 @@ function renderMarkets(){
     (xu?`<span>BIST 100 <b class="xu">${f2.format(xu.p)}</b> <span class="${cls(xu.p/xu.prev-1)}">${pct(xu.p/xu.prev-1)}</span></span>`:'')+
     st('BIST',isOpen('THYAO'),isOpen('THYAO')?'açık':'kapalı')+
     st('ABD',isOpen('AAPL'),isOpen('AAPL')?'açık':'kapalı')+
-    st('Kripto',cryptoLive,cryptoLive?'canlı':'10 dk')+
+    st('Kripto',cryptoLive,cryptoLive?'canlı':'5 dk')+
     `<span>Güncelleme ${hhmm(D.updated)}</span>`;
 }
 
@@ -433,7 +463,8 @@ function drawChart(cv,vals,opt={}){
   const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
   if(vals.length<2)return;
   const padR=opt.labels?70:6, padT=8, padB=8, cw=w-padR, ch=h-padT-padB;
-  let mn=Math.min(...vals), mx=Math.max(...vals);
+  const ex=(opt.extra||[]).filter(v=>v!=null);
+  let mn=Math.min(...vals,...ex), mx=Math.max(...vals,...ex);
   if(opt.base!=null){mn=Math.min(mn,opt.base);mx=Math.max(mx,opt.base)}
   if(mx===mn){mx+=Math.abs(mx)*.01||1;mn-=Math.abs(mn)*.01||1}
   const pad=(mx-mn)*.08; mn-=pad; mx+=pad;
@@ -455,6 +486,11 @@ function drawChart(cv,vals,opt={}){
   g.beginPath();vals.forEach((v,i)=>i?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v)));
   g.strokeStyle=col;g.lineWidth=1.75;g.lineJoin='round';g.stroke();
   g.beginPath();g.arc(X(vals.length-1),Y(vals[vals.length-1]),3.5,0,Math.PI*2);g.fillStyle=col;g.fill();
+  if(opt.extra){
+    g.setLineDash([5,4]);g.strokeStyle=css('--accent');g.lineWidth=1.5;g.beginPath();let on=false;
+    opt.extra.forEach((v,i)=>{if(v==null){on=false;return}on?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));on=true});
+    g.stroke();g.setLineDash([]);
+  }
 }
 const shortTL=v=>v>=1e6?f2.format(v/1e6)+' Mn':v>=1e4?f0.format(v):f2.format(v);
 
@@ -462,7 +498,14 @@ const shortTL=v=>v>=1e6?f2.format(v/1e6)+' Mn':v>=1e4?f0.format(v):f2.format(v);
 function snapshot(force){
   if(!D||!S.trades.length)return;
   const last=S.pv[S.pv.length-1];
-  if(force||!last||Date.now()-last.t>=PV_EVERY){S.pv.push({t:Date.now(),v:total()});if(S.pv.length>PV_MAX)S.pv.splice(0,S.pv.length-PV_MAX);save()}
+  if(force||!last||Date.now()-last.t>=PV_EVERY){S.pv.push({t:Date.now(),v:total(),x:A('XU100')?A('XU100').p:null});if(S.pv.length>PV_MAX)S.pv.splice(0,S.pv.length-PV_MAX);save()}
+}
+// BIST 100: ilk işlem anında 100.000 ₺ endekse yatırılsaydı bugün ne olurdu
+function bench(){
+  const i0=S.pv.findIndex(p=>p.x); if(i0<0||!A('XU100'))return null;
+  const x0=S.pv[i0].x, v0=S.pv[i0].v; let lx=x0;
+  const series=S.pv.map((p,i)=>{if(i<i0)return null;if(p.x)lx=p.x;return v0*lx/x0}).concat([v0*A('XU100').p/x0]);
+  return {series,x0,v0,t0:S.pv[i0].t,ret:A('XU100').p/x0-1};
 }
 function renderSummary(){
   if(!D)return;
@@ -473,17 +516,17 @@ function renderSummary(){
   $('sInv').textContent=tl(iv);
   $('sUnr').innerHTML=`<span class="${cls(unr)}">${signed(unr,tl)}</span>`;
   $('sReal').innerHTML=`<span class="${cls(S.realized)}">${signed(S.realized,tl)}</span>`;
-  const has=S.pv.length>0;
-  $('pvChart').hidden=!has; $('pvEmpty').hidden=has;
+  const has=S.pv.length>0, bm=bench();
+  $('pvChart').hidden=!has; $('pvEmpty').hidden=has; $('pvLegend').hidden=!(has&&bm);
   if(has){
-    drawChart($('pvChart'),S.pv.map(p=>p.v).concat([T]),{base:START_CASH,labels:shortTL});
+    drawChart($('pvChart'),S.pv.map(p=>p.v).concat([T]),{base:START_CASH,labels:shortTL,extra:bm?bm.series:null});
     $('pvRange').textContent=dmhm(S.pv[0].t)+' → şimdi';
   } else $('pvRange').textContent='';
 }
 
 // ---- Detay ve emir ----
 function select(s,scroll){
-  S.sel=s; renderList(false); renderDetail(); $('qty').value=''; updateEst(); save();
+  S.sel=s; renderList(false); renderDetail(); $('qty').value=''; $('opr').value=otype!=='mkt'&&A(s)?String(+nat(s).toPrecision(6)).replace('.',','):''; updateEst(); save();
   if(scroll&&window.matchMedia('(max-width:860px)').matches)$('detailPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderDetail(){
@@ -505,36 +548,53 @@ function renderDetail(){
   $('qtyUnit').textContent=mode==='a'?'₺':(a.dec?s:'adet');
   $('qtyLbl').textContent=mode==='a'?'Tutar':(a.dec?'Miktar':'Adet');
   const cn=$('closedNote');
-  cn.hidden=isOpen(s);
+  cn.hidden=isOpen(s)||otype!=='mkt';
   if(!isOpen(s))cn.textContent='Piyasa şu an kapalı. Emrin son fiyattan ('+dmhm(a.t*1000)+') gerçekleşir.';
 }
 function parseNum(v){v=(v||'').replace(/\s/g,'');if(v.includes(',')&&v.includes('.'))v=v.replace(/\./g,'');v=v.replace(',','.');const n=parseFloat(v);return isFinite(n)?n:0}
 function roundQ(s,q){return isDec(s)?Math.floor(q*1e6)/1e6:Math.floor(q+1e-9)}
+const fx=s=>A(s)&&A(s).cur==='USD'?usd():1;
 function calcOrder(){
-  const s=S.sel, p=tlPrice(s), raw=parseNum($('qty').value);
+  const s=S.sel, px=parseNum($('opr').value), p=otype==='mkt'?tlPrice(s):px*fx(s), raw=parseNum($('qty').value);
   let q=mode==='q'?raw:(side==='buy'?raw/(p*(1+FEE)):raw/p);
   q=roundQ(s,q);
   const gross=q*p, fee=gross*FEE;
-  return {s,p,q,gross,fee,total:side==='buy'?gross+fee:gross-fee};
+  return {s,p,px,q,gross,fee,total:side==='buy'?gross+fee:gross-fee};
 }
 function maxBuy(s){return roundQ(s,S.cash/(tlPrice(s)*(1+FEE)))}
 function updateEst(){
   if(!D||!A(S.sel))return;
   const o=calcOrder(), h=S.hold[o.s];
-  $('eP').textContent=tl(o.p); $('eQ').textContent=o.q?fmtQty(o.s,o.q):'–';
+  renderOHint();
+  $('eP').textContent=o.p?tl(o.p):'–'; $('eQ').textContent=o.q?fmtQty(o.s,o.q):'–';
   $('eF').textContent=o.q?tl(o.fee):'–'; $('eT').textContent=o.q?tl(o.total):'–';
   $('eTotL').textContent=side==='buy'?'Ödenecek tutar':'Hesaba geçecek tutar';
   let err='';
   if(o.q>0){
     if(side==='buy'&&o.total>S.cash+1e-6)err='Nakit yetersiz. En fazla '+fmtQty(o.s,maxBuy(o.s))+' alabilirsin.';
     if(side==='sell'&&(!h||o.q>h.q+1e-9))err=h?'Elinde yalnızca '+fmtQty(o.s,h.q)+' var.':'Bu varlıktan elinde yok.';
-  } else if($('qty').value.trim()&&mode==='a'&&!isDec(o.s))err='Bu tutar 1 adet almaya yetmiyor.';
+  } else if($('qty').value.trim()&&mode==='a'&&!isDec(o.s)&&o.p)err='Bu tutar 1 adet almaya yetmiyor.';
+  if(otype!=='mkt'&&!(o.px>0))err=err||($('qty').value.trim()?'Tetik fiyatını gir.':'');
   $('err').textContent=err;
-  const go=$('go'); go.disabled=!(o.q>0)||!!err;
+  const go=$('go'); go.disabled=!(o.q>0)||!!err||(otype!=='mkt'&&!(o.px>0));
   go.className='go'+(side==='sell'?' sell':'');
-  go.textContent=o.s+(side==='buy'?' al':' sat');
+  go.textContent=otype==='mkt'?o.s+(side==='buy'?' al':' sat'):(otype==='lmt'?'Limit ':'Stop ')+(side==='buy'?'alış':'satış')+' emri ver';
 }
 $('qty').addEventListener('input',updateEst);
+$('opr').addEventListener('input',updateEst);
+const OTXT={
+  'lmt-buy':'Fiyat bu seviyeye ya da altına düşünce alır.',
+  'lmt-sell':'Fiyat bu seviyeye ya da üstüne çıkınca satar (kâr al).',
+  'stp-buy':'Fiyat bu seviyeye ya da üstüne çıkınca alır.',
+  'stp-sell':'Fiyat bu seviyeye ya da altına düşünce satar (zarar durdur).'};
+function renderOHint(){
+  const on=otype!=='mkt'; $('oprBox').hidden=!on; $('oHint').hidden=!on;
+  if(on&&A(S.sel)){$('oHint').textContent=OTXT[otype+'-'+side]+' Şu anki fiyat: '+fmtNative(S.sel,nat(S.sel))+'.';$('oprUnit').textContent=A(S.sel).cur==='USD'?'$':'₺'}
+}
+$('otype').addEventListener('click',e=>{const b=e.target.closest('[data-o]');if(!b)return;otype=b.dataset.o;
+  $('otype').querySelectorAll('[data-o]').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  if(otype!=='mkt'&&!$('opr').value&&A(S.sel))$('opr').value=String(+nat(S.sel).toPrecision(6)).replace('.',',');
+  renderDetail();updateEst()});
 function setSide(v){side=v;$('sideBuy').setAttribute('aria-pressed',v==='buy');$('sideSell').setAttribute('aria-pressed',v==='sell');updateEst()}
 $('sideBuy').addEventListener('click',()=>setSide('buy'));
 $('sideSell').addEventListener('click',()=>setSide('sell'));
@@ -550,37 +610,116 @@ $('presets').addEventListener('click',e=>{
   $('qty').value=mode==='q'?String(q).replace('.',','):f2.format(side==='buy'?q*p*(1+FEE):q*p).replace(/\./g,'');
   updateEst();
 });
+// İşlemi gerçekleştirir; olmazsa nedenini döndürür
+function execTrade(s,sd,q,p,via){
+  const fee=q*p*FEE;
+  if(sd==='buy'){
+    const tot=q*p+fee;
+    if(tot>S.cash+1e-6)return 'nakit yetersiz';
+    S.cash-=tot;
+    const h=S.hold[s]||(S.hold[s]={q:0,cost:0});
+    h.q+=q; h.cost+=tot; h.last=p;
+    S.trades.unshift({t:Date.now(),s,side:'buy',q,p,fee,total:tot,via});
+  } else {
+    const h=S.hold[s]; if(!h||h.q<1e-12)return 'elinde yok';
+    q=Math.min(q,h.q);
+    const costPart=h.cost*(q/h.q), f=q*p*FEE, proceeds=q*p-f, pl=proceeds-costPart;
+    S.cash+=proceeds; h.q-=q; h.cost-=costPart; S.realized+=pl;
+    if(h.q<1e-9)delete S.hold[s];
+    S.trades.unshift({t:Date.now(),s,side:'sell',q,p,fee:f,total:proceeds,pl,via});
+  }
+  if(S.pv.length===0)S.pv.push({t:Date.now()-1,v:START_CASH,x:A('XU100')?A('XU100').p:null});
+  return '';
+}
+const OTNAME={lmt:'Limit',stp:'Stop'};
+function triggered(o,v){return o.type==='lmt'?(o.side==='buy'?v<=o.px:v>=o.px):(o.side==='buy'?v>=o.px:v<=o.px)}
+// Bekleyen emirleri kontrol et: uygulama kapalıyken gelen fiyatlar (5 günlük seri) dahil
+function checkOrders(){
+  if(!D||!S.orders.length)return;
+  const done=[];
+  S.orders.forEach(o=>{
+    const a=A(o.s); if(!a)return;
+    let hit=null;
+    for(const [t,v] of a.h){if(t*1000>o.t&&triggered(o,v)){hit=o.px;break}}
+    if(hit==null&&(LIVE[o.s]||(isOpen(o.s)&&a.t*1000>o.t-60000))&&triggered(o,nat(o.s)))hit=nat(o.s);
+    if(hit==null)return;
+    const err=execTrade(o.s,o.side,o.q,hit*fx(o.s),OTNAME[o.type]);
+    done.push(o);
+    S.olog.unshift({...o,at:Date.now(),ok:!err,why:err,pn:hit});
+    toast(err?`${OTNAME[o.type]} emri iptal: ${o.s} (${err})`:`${OTNAME[o.type]} emri gerçekleşti: ${fmtQty(o.s,o.q)} ${o.s} ${o.side==='buy'?'alındı':'satıldı'}`);
+  });
+  if(done.length){S.orders=S.orders.filter(o=>!done.includes(o));S.olog=S.olog.slice(0,50);snapshot(true);save()}
+}
 $('ticket').addEventListener('submit',e=>{
   e.preventDefault();
   if(!D)return;
   const o=calcOrder(); if(!(o.q>0))return;
   const s=o.s;
-  if(side==='buy'){
-    if(o.total>S.cash+1e-6)return;
-    S.cash-=o.total;
-    const h=S.hold[s]||(S.hold[s]={q:0,cost:0});
-    h.q+=o.q; h.cost+=o.total; h.last=o.p;
-    S.trades.unshift({t:Date.now(),s,side:'buy',q:o.q,p:o.p,fee:o.fee,total:o.total});
-    toast(`${fmtQty(s,o.q)} ${s} alındı · ${tl(o.total)}`);
-  } else {
-    const h=S.hold[s]; if(!h||o.q>h.q+1e-9)return;
-    const q=Math.min(o.q,h.q), costPart=h.cost*(q/h.q), fee=q*o.p*FEE, proceeds=q*o.p-fee, pl=proceeds-costPart;
-    S.cash+=proceeds; h.q-=q; h.cost-=costPart; S.realized+=pl;
-    if(h.q<1e-9)delete S.hold[s];
-    S.trades.unshift({t:Date.now(),s,side:'sell',q,p:o.p,fee,total:proceeds,pl});
-    toast(`${fmtQty(s,q)} ${s} satıldı · K/Z ${signed(pl,tl)}`);
+  if(otype!=='mkt'){
+    if(!(o.px>0))return;
+    S.orders.unshift({id:Date.now()+''+Math.random().toString(36).slice(2,6),t:Date.now(),s,side,type:otype,q:o.q,px:o.px});
+    toast(`${OTNAME[otype]} emri verildi: ${fmtQty(s,o.q)} ${s}, ${fmtNative(s,o.px)}`);
+    $('qty').value=''; save(); setTab('O'); renderAll(false); return;
   }
-  if(S.pv.length===0)S.pv.push({t:Date.now()-1,v:START_CASH});
+  const err=execTrade(s,side,o.q,o.p,'Piyasa');
+  if(err)return;
+  toast(side==='buy'?`${fmtQty(s,o.q)} ${s} alındı · ${tl(o.total)}`:`${fmtQty(s,o.q)} ${s} satıldı · K/Z ${signed(S.trades[0].pl,tl)}`);
   $('qty').value=''; snapshot(true); save(); applyFilter(); renderAll(false);
 });
 
 // ---- Portföy ve geçmiş ----
 let tab='H';
-function setTab(t){tab=t;$('tabH').setAttribute('aria-selected',t==='H');$('tabT').setAttribute('aria-selected',t==='T');$('paneH').hidden=t!=='H';$('paneT').hidden=t!=='T';renderBottom()}
-$('tabH').addEventListener('click',()=>setTab('H'));
-$('tabT').addEventListener('click',()=>setTab('T'));
+function setTab(t){tab=t;['H','O','P','T'].forEach(k=>{$('tab'+k).setAttribute('aria-selected',t===k);$('pane'+k).hidden=t!==k});renderBottom()}
+['H','O','P','T'].forEach(k=>$('tab'+k).addEventListener('click',()=>setTab(k)));
+$('tabO').textContent='Emirler'+(S.orders.length?' ('+S.orders.length+')':'');
 const nameOf=s=>A(s)?A(s).n:'';
+const fdt=t=>{const d=new Date(t);return d.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})};
+function renderOrders(){
+  $('tabNote').textContent=S.orders.length?S.orders.length+' bekleyen emir':'';
+  let html='';
+  if(!S.orders.length)html+=`<div class="empty">Bekleyen emrin yok. Emir fişinden <b>Limit</b> ya da <b>Stop</b> seçerek fiyat bir seviyeye gelince otomatik alıp satan emirler verebilirsin.</div>`;
+  else html+=`<div class="tblwrap"><table><thead><tr><th>Verildiği an</th><th>Emir</th><th>Varlık</th><th>Miktar</th><th>Tetik fiyatı</th><th>Şu anki fiyat</th><th>Uzaklık</th><th></th></tr></thead><tbody>${
+    S.orders.map(o=>{const cur=A(o.s)?nat(o.s):null, dist=cur?o.px/cur-1:0;
+      return `<tr><td class="t">${fdt(o.t)}</td><td><span class="badge ${o.side}">${OTNAME[o.type].toLocaleUpperCase('tr-TR')} ${o.side==='buy'?'ALIŞ':'SATIŞ'}</span></td><td><b>${o.s}</b></td><td>${fmtQty(o.s,o.q)}</td><td>${A(o.s)?fmtNative(o.s,o.px):o.px}</td><td>${cur!=null?fmtNative(o.s,cur):'–'}</td><td>${pct(dist)}</td><td><button class="xbtn" type="button" data-cancel="${o.id}">İptal et</button></td></tr>`}).join('')
+  }</tbody></table></div>`;
+  if(S.olog.length)html+=`<div class="sect">Sonuçlanan emirler</div><div class="tblwrap"><table><thead><tr><th>Sonuç zamanı</th><th>Emir</th><th>Varlık</th><th>Miktar</th><th>Tetik fiyatı</th><th>Durum</th></tr></thead><tbody>${
+    S.olog.slice(0,20).map(o=>`<tr><td class="t">${fdt(o.at)}</td><td><span class="badge ${o.side}">${OTNAME[o.type].toLocaleUpperCase('tr-TR')} ${o.side==='buy'?'ALIŞ':'SATIŞ'}</span></td><td><b>${o.s}</b></td><td>${fmtQty(o.s,o.q)}</td><td>${A(o.s)?fmtNative(o.s,o.px):o.px}</td><td class="st ${o.ok?'up':o.why==='iptal'?'muted':'down'}">${o.ok?'Gerçekleşti':o.why==='iptal'?'Sen iptal ettin':'İptal: '+o.why}</td></tr>`).join('')
+  }</tbody></table></div>`;
+  $('paneO').innerHTML=html;
+}
+$('paneO').addEventListener('click',e=>{const b=e.target.closest('[data-cancel]');if(!b)return;
+  const o=S.orders.find(x=>x.id===b.dataset.cancel);if(!o)return;
+  S.orders=S.orders.filter(x=>x!==o);S.olog.unshift({...o,at:Date.now(),ok:false,why:'iptal'});save();renderAll(false);toast('Emir iptal edildi.')});
+function renderPerf(){
+  $('tabNote').textContent='';
+  if(!S.trades.length){$('paneP').innerHTML=`<div class="empty">İlk işlemini yaptığında getirin, BIST 100 ile karşılaştırman ve aylık sonuçların burada görünecek.</div>`;return}
+  const T=total(), ret=T/START_CASH-1, bm=bench();
+  const sells=S.trades.filter(t=>t.side==='sell'), wins=sells.filter(t=>t.pl>0).length;
+  const best=sells.reduce((a,t)=>!a||t.pl>a.pl?t:a,null), worst=sells.reduce((a,t)=>!a||t.pl<a.pl?t:a,null);
+  const fees=S.trades.reduce((x,t)=>x+t.fee,0);
+  const days=Math.max(1,Math.round((Date.now()-S.pv[0].t)/864e5));
+  const K=(l,v,sub)=>`<div class="k"><div class="lbl">${l}</div><div class="val">${v}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
+  let html='<div class="perf">'+
+    K('Toplam getirin',`<span class="${cls(ret)}">${pct(ret)}</span>`,`${signed(T-START_CASH,tl)} · ${days} gün`)+
+    (bm?K('Aynı dönemde BIST 100',`<span class="${cls(bm.ret)}">${pct(bm.ret)}</span>`,`${dmhm(bm.t0)} itibarıyla`)+
+        K('Endekse göre',`<span class="${cls(T/bm.v0-1-bm.ret)}">${signed((T/bm.v0-1-bm.ret)*100,x=>f2.format(x))} puan</span>`,(T/bm.v0-1)>=bm.ret?'Endeksi geçiyorsun':'Endeksin gerisindesin'):'')+
+    K('Kârlı satış oranı',sells.length?f0.format(wins/sells.length*100)+'%':'–',`${sells.length} satıştan ${wins} kârlı`)+
+    K('En iyi satış',best?`<span class="${cls(best.pl)}">${signed(best.pl,tl)}</span>`:'–',best?best.s+' · '+fdt(best.t):'Henüz satış yok')+
+    K('En kötü satış',worst?`<span class="${cls(worst.pl)}">${signed(worst.pl,tl)}</span>`:'–',worst?worst.s+' · '+fdt(worst.t):'Henüz satış yok')+
+    K('Ödenen komisyon',tl(fees),S.trades.length+' işlem')+'</div>';
+  // Aylık getiri: her ayın ilk ve son portföy değeri
+  const months={}; S.pv.concat([{t:Date.now(),v:T}]).forEach(p=>{const d=new Date(p.t),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');(months[k]=months[k]||[]).push(p.v)});
+  const keys=Object.keys(months).sort(); let prevEnd=START_CASH;
+  html+=`<div class="sect">Aylık getiri</div><div class="tblwrap"><table><thead><tr><th>Ay</th><th>Ay başı</th><th>Ay sonu / şimdi</th><th>Getiri</th></tr></thead><tbody>${
+    keys.map(k=>{const arr=months[k],st=prevEnd,en=arr[arr.length-1],r=en/st-1;prevEnd=en;const [y,m]=k.split('-');
+      return `<tr><td class="t">${new Date(+y,+m-1,1).toLocaleDateString('tr-TR',{month:'long',year:'numeric'})}</td><td>${tl(st)}</td><td>${tl(en)}</td><td class="${cls(r)}">${pct(r)}</td></tr>`}).reverse().join('')
+  }</tbody></table></div>`;
+  $('paneP').innerHTML=html;
+}
 function renderBottom(){
+  $('tabO').textContent='Emirler'+(S.orders.length?' ('+S.orders.length+')':'');
+  if(tab==='O')return renderOrders();
+  if(tab==='P')return renderPerf();
   const syms=Object.keys(S.hold);
   if(tab==='H'){
     $('tabNote').textContent=syms.length?syms.length+' pozisyon':'';
@@ -599,7 +738,7 @@ function renderBottom(){
     $('paneT').innerHTML=`<div class="statline"><span>Kapanan satış: <b>${sells.length}</b></span><span>Kârlı satış oranı: <b>${sells.length?f0.format(wins/sells.length*100)+'%':'–'}</b></span><span>Gerçekleşen K/Z: <b class="${cls(S.realized)}">${signed(S.realized,tl)}</b></span><span>Ödenen komisyon: <b>${tl(fees)}</b></span></div>
     <div class="tblwrap"><table><thead><tr><th>Tarih</th><th>İşlem</th><th>Varlık</th><th>Miktar</th><th>Fiyat</th><th>Komisyon</th><th>Tutar</th><th>K/Z</th></tr></thead><tbody>${
       S.trades.slice(0,300).map(t=>{const d=new Date(t.t);
-        return `<tr><td class="t">${d.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'})} ${d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</td><td><span class="badge ${t.side}">${t.side==='buy'?'ALIŞ':'SATIŞ'}</span></td><td><b>${t.s}</b></td><td>${fmtQty(t.s,t.q)}</td><td>${tl(t.p)}</td><td>${tl(t.fee)}</td><td>${tl(t.total)}</td><td class="${t.pl!=null?cls(t.pl):'muted'}">${t.pl!=null?signed(t.pl,tl):'–'}</td></tr>`}).join('')
+        return `<tr><td class="t">${d.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'})} ${d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</td><td><span class="badge ${t.side}">${t.via&&t.via!=='Piyasa'?t.via.toLocaleUpperCase('tr-TR')+' ':''}${t.side==='buy'?'ALIŞ':'SATIŞ'}</span></td><td><b>${t.s}</b></td><td>${fmtQty(t.s,t.q)}</td><td>${tl(t.p)}</td><td>${tl(t.fee)}</td><td>${tl(t.total)}</td><td class="${t.pl!=null?cls(t.pl):'muted'}">${t.pl!=null?signed(t.pl,tl):'–'}</td></tr>`}).join('')
     }</tbody></table></div>`;
   }
 }
@@ -624,7 +763,7 @@ function renderAll(flash){
   for(const s in S.hold)if(A(s))S.hold[s].last=tlPrice(s);
   renderMarkets();renderSummary();renderList(flash);renderDetail();updateEst();renderBottom();
 }
-function onData(){ if(D){buildList();snapshot(false)} renderAll(true) }
+function onData(){ if(D){buildList();checkOrders();snapshot(false)} renderAll(true) }
 $('retry').addEventListener('click',()=>{loadData().then(loadCrypto)});
 window.addEventListener('resize',()=>{renderSummary();renderDetail()});
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>renderAll(false));

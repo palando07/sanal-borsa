@@ -1,8 +1,10 @@
 name: Fiyatları güncelle
 
+# GitHub zamanlanmış işleri sık sık geciktirdiği için her çalışma ~50 dakika
+# boyunca 5 dakikada bir fiyat çeker; yarım saatte bir yenisi sıraya girer.
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/30 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
@@ -18,18 +20,29 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 58
     steps:
       - uses: actions/checkout@v4
-      - name: Fiyatları çek
-        run: mkdir -p out && python3 scripts/fetch_prices.py out/prices.json
-      - name: data dalına yaz
-        # Geçmiş birikmesin diye data dalı her seferinde tek commit olarak yeniden yazılır
+      - name: Fiyatları 5 dakikada bir çek ve data dalına yaz
+        env:
+          REMOTE: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         run: |
-          cd out
-          git init -q -b data
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add prices.json
-          git commit -qm "Fiyatlar $(date -u +%Y-%m-%dT%H:%MZ)"
-          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" data
+          end=$((SECONDS + 50*60)); ok=0
+          while :; do
+            if python3 scripts/fetch_prices.py prices.json; then
+              # Geçmiş birikmesin diye data dalı her seferinde tek commit olarak yeniden yazılır
+              rm -rf pub && mkdir pub && cp prices.json pub/ && (
+                cd pub && git init -q -b data &&
+                git config user.name "github-actions[bot]" &&
+                git config user.email "41898282+github-actions[bot]@users.noreply.github.com" &&
+                git add prices.json && git commit -qm "Fiyatlar $(date -u +%Y-%m-%dT%H:%MZ)" &&
+                git push -qf "$REMOTE" data
+              ) && ok=$((ok+1))
+            else
+              echo "::warning::Bu turda fiyatlar alınamadı"
+            fi
+            [ $((SECONDS + 300)) -ge $end ] && break
+            sleep 300
+          done
+          echo "$ok tur başarılı"
+          [ $ok -gt 0 ]
