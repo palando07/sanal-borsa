@@ -72,7 +72,7 @@ def main(out):
 
     by = {}
     queries = [(c, f'"{c}" hisse when:7d') for c, _ in BIST]
-    queries += [(c, f'{n} hisse when:7d') for c, n in US]
+    queries += [(c.replace("-", "."), f'{n} hisse when:7d') for c, n in US]
     queries += [(c, f'{n} kripto when:7d') for c, n in CRYPTO]
     queries += [("GAU", "gram altın when:3d"), ("GAG", "gümüş fiyatı when:3d"),
                 ("USD", "dolar kuru when:2d"), ("EUR", "euro kuru when:2d")]
@@ -80,7 +80,7 @@ def main(out):
         items = dedupe(rss(q, PER_ASSET + 4))[:PER_ASSET]
         if items:
             by[code] = items
-        time.sleep(0.4)
+        time.sleep(0.3)
 
     if not general and not by:
         if os.environ.get("GITHUB_ACTIONS"):

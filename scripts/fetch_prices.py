@@ -9,34 +9,63 @@ import sys
 import time
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 OZ_TO_GRAM = 31.1034768
 
-# (yahoo sembolü, uygulamadaki kod, ad)
+# BIST 100 endeksindeki şirketler (2026 başı itibarıyla yaklaşık liste; Yahoo'da bulunamayanlar atlanır)
 BIST = [
-    ("AEFES", "Anadolu Efes"), ("AKBNK", "Akbank"), ("ARCLK", "Arçelik"), ("ASELS", "Aselsan"),
-    ("ASTOR", "Astor Enerji"), ("BIMAS", "BİM Mağazalar"), ("CCOLA", "Coca-Cola İçecek"),
-    ("DOAS", "Doğuş Otomotiv"), ("EKGYO", "Emlak Konut GYO"), ("ENKAI", "Enka İnşaat"),
-    ("EREGL", "Ereğli Demir Çelik"), ("FROTO", "Ford Otosan"), ("GARAN", "Garanti BBVA"),
-    ("GUBRF", "Gübre Fabrikaları"), ("HALKB", "Halkbank"), ("HEKTS", "Hektaş"),
-    ("ISCTR", "İş Bankası (C)"), ("KCHOL", "Koç Holding"), ("KONTR", "Kontrolmatik"),
-    ("KRDMD", "Kardemir (D)"), ("MGROS", "Migros"),
-    ("OYAKC", "Oyak Çimento"), ("PETKM", "Petkim"), ("PGSUS", "Pegasus"),
-    ("SAHOL", "Sabancı Holding"), ("SASA", "SASA Polyester"), ("SISE", "Şişecam"),
-    ("TAVHL", "TAV Havalimanları"), ("TCELL", "Turkcell"), ("THYAO", "Türk Hava Yolları"),
-    ("TOASO", "Tofaş"), ("TTKOM", "Türk Telekom"), ("TUPRS", "Tüpraş"), ("ULKER", "Ülker"),
-    ("VAKBN", "VakıfBank"), ("YKBNK", "Yapı Kredi"),
+    ("AEFES", "Anadolu Efes"), ("AGHOL", "Anadolu Grubu Holding"), ("AHGAZ", "Ahlatcı Doğalgaz"),
+    ("AKBNK", "Akbank"), ("AKFYE", "Akfen Yenilenebilir"), ("AKSA", "Aksa Akrilik"), ("AKSEN", "Aksa Enerji"),
+    ("ALARK", "Alarko Holding"), ("ALBRK", "Albaraka Türk"), ("ALFAS", "Alfa Solar"), ("ALTNY", "Altınay Savunma"),
+    ("ANSGR", "Anadolu Sigorta"), ("ARCLK", "Arçelik"), ("ARDYZ", "ARD Bilişim"), ("ASELS", "Aselsan"),
+    ("ASTOR", "Astor Enerji"), ("BERA", "Bera Holding"), ("BIMAS", "BİM Mağazalar"), ("BINHO", "1000 Yatırımlar Holding"),
+    ("BRSAN", "Borusan Boru"), ("BRYAT", "Borusan Yatırım"), ("BSOKE", "Batısöke Çimento"), ("BTCIM", "Batıçim"),
+    ("CANTE", "Çan2 Termik"), ("CCOLA", "Coca-Cola İçecek"), ("CIMSA", "Çimsa"), ("CLEBI", "Çelebi Hava Servisi"),
+    ("CWENE", "CW Enerji"), ("DOAS", "Doğuş Otomotiv"), ("DOHOL", "Doğan Holding"), ("ECILC", "EİS Eczacıbaşı İlaç"),
+    ("EFORC", "Efor Çay"), ("EGEEN", "Ege Endüstri"), ("EKGYO", "Emlak Konut GYO"), ("ENERY", "Enerya Enerji"),
+    ("ENJSA", "Enerjisa"), ("ENKAI", "Enka İnşaat"), ("EREGL", "Ereğli Demir Çelik"), ("EUPWR", "Europower Enerji"),
+    ("FENER", "Fenerbahçe"), ("FROTO", "Ford Otosan"), ("GARAN", "Garanti BBVA"), ("GESAN", "Girişim Elektrik"),
+    ("GLRMK", "Gülermak"), ("GOLTS", "Göltaş Çimento"), ("GRSEL", "Gür-Sel Turizm"), ("GSRAY", "Galatasaray"),
+    ("GUBRF", "Gübre Fabrikaları"), ("HALKB", "Halkbank"), ("HEKTS", "Hektaş"), ("ISCTR", "İş Bankası (C)"),
+    ("ISMEN", "İş Yatırım"), ("KCAER", "Kocaer Çelik"), ("KCHOL", "Koç Holding"), ("KONTR", "Kontrolmatik"),
+    ("KONYA", "Konya Çimento"), ("KOZAA", "Koza Anadolu Metal"), ("KRDMD", "Kardemir (D)"), ("KTLEV", "Katılımevim"),
+    ("LMKDC", "Limak Doğu Anadolu Çimento"), ("MAVI", "Mavi Giyim"), ("MGROS", "Migros"), ("MIATK", "Mia Teknoloji"),
+    ("MPARK", "MLP Sağlık (Medical Park)"), ("OBAMS", "Oba Makarnacılık"), ("ODAS", "Odaş Elektrik"), ("OTKAR", "Otokar"),
+    ("OYAKC", "Oyak Çimento"), ("PASEU", "Pasifik Eurasia"), ("PETKM", "Petkim"), ("PGSUS", "Pegasus"),
+    ("RALYH", "Ral Yatırım Holding"), ("REEDR", "Reeder Teknoloji"), ("SAHOL", "Sabancı Holding"), ("SASA", "SASA Polyester"),
+    ("SELEC", "Selçuk Ecza"), ("SISE", "Şişecam"), ("SKBNK", "Şekerbank"), ("SMRTG", "Smart Güneş Enerjisi"),
+    ("SOKM", "Şok Marketler"), ("TABGD", "TAB Gıda"), ("TAVHL", "TAV Havalimanları"), ("TCELL", "Turkcell"),
+    ("THYAO", "Türk Hava Yolları"), ("TKFEN", "Tekfen Holding"), ("TOASO", "Tofaş"), ("TRALT", "Türk Altın (Koza Altın)"),
+    ("TSKB", "TSKB"), ("TTKOM", "Türk Telekom"), ("TTRAK", "Türk Traktör"), ("TUKAS", "Tukaş"), ("TUPRS", "Tüpraş"),
+    ("TURSG", "Türkiye Sigorta"), ("ULKER", "Ülker"), ("VAKBN", "VakıfBank"), ("VESBE", "Vestel Beyaz Eşya"),
+    ("VESTL", "Vestel"), ("YEOTK", "YEO Teknoloji"), ("YKBNK", "Yapı Kredi"), ("ZOREN", "Zorlu Enerji"),
 ]
 US = [
-    ("AAPL", "Apple"), ("MSFT", "Microsoft"), ("NVDA", "NVIDIA"), ("AMZN", "Amazon"),
-    ("GOOGL", "Alphabet (Google)"), ("META", "Meta"), ("TSLA", "Tesla"), ("NFLX", "Netflix"),
-    ("AMD", "AMD"), ("INTC", "Intel"), ("PLTR", "Palantir"), ("JPM", "JPMorgan Chase"),
-    ("V", "Visa"), ("KO", "Coca-Cola"), ("DIS", "Disney"), ("NKE", "Nike"), ("COIN", "Coinbase"),
+    ("AAPL", "Apple"), ("MSFT", "Microsoft"), ("NVDA", "NVIDIA"), ("AMZN", "Amazon"), ("GOOGL", "Alphabet (Google)"),
+    ("META", "Meta"), ("TSLA", "Tesla"), ("AVGO", "Broadcom"), ("ORCL", "Oracle"), ("NFLX", "Netflix"),
+    ("AMD", "AMD"), ("INTC", "Intel"), ("QCOM", "Qualcomm"), ("MU", "Micron"), ("TSM", "TSMC"), ("ASML", "ASML"),
+    ("CRM", "Salesforce"), ("ADBE", "Adobe"), ("PLTR", "Palantir"), ("UBER", "Uber"), ("SHOP", "Shopify"),
+    ("SPOT", "Spotify"), ("ABNB", "Airbnb"), ("PYPL", "PayPal"), ("COIN", "Coinbase"), ("BABA", "Alibaba"),
+    ("JPM", "JPMorgan Chase"), ("BAC", "Bank of America"), ("V", "Visa"), ("MA", "Mastercard"),
+    ("BRK-B", "Berkshire Hathaway"), ("WMT", "Walmart"), ("COST", "Costco"), ("KO", "Coca-Cola"), ("PEP", "PepsiCo"),
+    ("MCD", "McDonald's"), ("SBUX", "Starbucks"), ("NKE", "Nike"), ("DIS", "Disney"), ("XOM", "Exxon Mobil"),
+    ("CVX", "Chevron"), ("LLY", "Eli Lilly"), ("JNJ", "Johnson & Johnson"), ("PFE", "Pfizer"), ("BA", "Boeing"),
+    ("F", "Ford"), ("GM", "General Motors"),
 ]
 CRYPTO = [
-    ("BTC", "Bitcoin"), ("ETH", "Ethereum"), ("SOL", "Solana"), ("XRP", "XRP"),
-    ("BNB", "BNB"), ("DOGE", "Dogecoin"), ("ADA", "Cardano"), ("AVAX", "Avalanche"),
+    ("BTC", "Bitcoin"), ("ETH", "Ethereum"), ("SOL", "Solana"), ("XRP", "XRP"), ("BNB", "BNB"),
+    ("DOGE", "Dogecoin"), ("ADA", "Cardano"), ("AVAX", "Avalanche"), ("TRX", "TRON"), ("LINK", "Chainlink"),
+    ("DOT", "Polkadot"), ("LTC", "Litecoin"), ("BCH", "Bitcoin Cash"), ("SHIB", "Shiba Inu"), ("XLM", "Stellar"),
+    ("NEAR", "NEAR Protocol"), ("ATOM", "Cosmos"), ("ETC", "Ethereum Classic"), ("HBAR", "Hedera"),
+    ("FIL", "Filecoin"), ("ALGO", "Algorand"),
+]
+# Endeks fonları (ETF): tek alımla bir endeksin tamamına yatırım
+FUNDS = [
+    ("SPY", "S&P 500 Endeks Fonu (ABD'nin en büyük 500 şirketi)"), ("QQQ", "Nasdaq 100 Endeks Fonu (teknoloji ağırlıklı)"),
+    ("DIA", "Dow Jones Endeks Fonu"), ("VT", "Tüm Dünya Hisse Fonu"), ("EEM", "Gelişmekte Olan Ülkeler Fonu"),
+    ("TUR", "Türkiye Hisse Fonu (MSCI Turkey)"), ("GLD", "Altın Fonu"), ("TLT", "ABD Uzun Vadeli Tahvil Fonu"),
 ]
 
 # Yahoo tam tarayıcı kimliğiyle gelen çerezsiz istekleri 429 ile reddediyor; kısa kimlik çalışıyor
@@ -89,31 +118,39 @@ def parse(r):
 
 
 def main(out):
-    assets = {}
+    # (kod, ad, kategori, para birimi, yahoo sembolü, ekler)
+    specs = [("XU100", "BIST 100 Endeksi", "Endeks", "TRY", "XU100.IS", {"idx": True})]
+    specs += [(c, n, "BIST", "TRY", c + ".IS", {}) for c, n in BIST]
+    specs += [(c.replace("-", "."), n, "ABD", "USD", c, {}) for c, n in US]
+    specs += [(c, n, "Fonlar", "USD", c, {}) for c, n in FUNDS]
+    specs += [(c, n, "Kripto", "USD", c + "-USD", {"dec": True, "bn": c + "USDT"}) for c, n in CRYPTO]
+    specs += [
+        ("USD", "ABD Doları", "Döviz", "TRY", "TRY=X", {"dec": True}),
+        ("EUR", "Euro", "Döviz", "TRY", "EURTRY=X", {"dec": True}),
+        ("GBP", "İngiliz Sterlini", "Döviz", "TRY", "GBPTRY=X", {"dec": True}),
+        ("CHF", "İsviçre Frangı", "Döviz", "TRY", "CHFTRY=X", {"dec": True}),
+        ("BRENT", "Brent Petrol (varil)", "Emtia", "USD", "BZ=F", {"dec": True}),
+        ("XAU", "Ons Altın", "Emtia", "USD", "GC=F", {"dec": True}),
+        ("XAG", "Ons Gümüş", "Emtia", "USD", "SI=F", {"dec": True}),
+    ]
 
-    def add(code, name, cat, cur, yahoo, **extra):
+    def one(spec):
+        code, name, cat, cur, yahoo, extra = spec
         r = chart(yahoo)
         d = parse(r) if r else None
-        if d:
-            assets[code] = {"n": name, "c": cat, "cur": cur, **d, **extra}
+        return code, ({"n": name, "c": cat, "cur": cur, **d, **extra} if d else None)
 
-    add("XU100", "BIST 100 Endeksi", "Endeks", "TRY", "XU100.IS", idx=True)
-    for code, name in BIST:
-        add(code, name, "BIST", "TRY", code + ".IS")
-    for code, name in US:
-        add(code, name, "ABD", "USD", code)
-    for code, name in CRYPTO:
-        add(code, name, "Kripto", "USD", code + "-USD", dec=True, bn=code + "USDT")
-    add("USD", "ABD Doları", "Döviz", "TRY", "TRY=X", dec=True)
-    add("EUR", "Euro", "Döviz", "TRY", "EURTRY=X", dec=True)
+    # 6 paralel istek: ~190 sembol yarım dakikada biter
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        results = dict(ex.map(one, specs))
+    assets = {code: results[code] for code, *_ in specs if results.get(code)}
 
     # Gram altın ve gümüş: ons fiyatı × dolar kuru / 31,10
     usd = assets.get("USD")
     if usd:
         k = usd["p"] / OZ_TO_GRAM
-        for code, name, yahoo in (("GAU", "Gram Altın", "GC=F"), ("GAG", "Gram Gümüş", "SI=F")):
-            r = chart(yahoo)
-            d = parse(r) if r else None
+        for code, name, src in (("GAU", "Gram Altın", "XAU"), ("GAG", "Gram Gümüş", "XAG")):
+            d = assets.get(src)
             if not d:
                 continue
             assets[code] = {
