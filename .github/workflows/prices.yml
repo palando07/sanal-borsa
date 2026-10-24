@@ -1,7 +1,7 @@
-name: Fiyatları güncelle
+name: Fiyatları ve haberleri güncelle
 
 # GitHub zamanlanmış işleri sık sık geciktirdiği için her çalışma ~50 dakika
-# boyunca 5 dakikada bir fiyat çeker; yarım saatte bir yenisi sıraya girer.
+# boyunca 5 dakikada bir fiyat, yarım saatte bir haber çeker; yarım saatte bir yenisi sıraya girer.
 on:
   schedule:
     - cron: "*/30 * * * *"
@@ -23,19 +23,23 @@ jobs:
     timeout-minutes: 58
     steps:
       - uses: actions/checkout@v4
-      - name: Fiyatları 5 dakikada bir çek ve data dalına yaz
+      - name: Fiyatları (5 dk) ve haberleri (30 dk) çek, data dalına yaz
         env:
           REMOTE: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         run: |
-          end=$((SECONDS + 50*60)); ok=0
+          # Önceki haberleri al; bu çalışmada haber çekilemezse kaybolmasın
+          curl -sf "https://raw.githubusercontent.com/${{ github.repository }}/data/news.json" -o news.json || rm -f news.json
+          end=$((SECONDS + 50*60)); ok=0; round=0
           while :; do
+            if [ $((round % 6)) -eq 0 ]; then python3 scripts/fetch_news.py news.json || true; fi
+            round=$((round+1))
             if python3 scripts/fetch_prices.py prices.json; then
               # Geçmiş birikmesin diye data dalı her seferinde tek commit olarak yeniden yazılır
-              rm -rf pub && mkdir pub && cp prices.json pub/ && (
+              rm -rf pub && mkdir pub && cp prices.json pub/ && { [ ! -f news.json ] || cp news.json pub/; } && (
                 cd pub && git init -q -b data &&
                 git config user.name "github-actions[bot]" &&
                 git config user.email "41898282+github-actions[bot]@users.noreply.github.com" &&
-                git add prices.json && git commit -qm "Fiyatlar $(date -u +%Y-%m-%dT%H:%MZ)" &&
+                git add . && git commit -qm "Fiyatlar $(date -u +%Y-%m-%dT%H:%MZ)" &&
                 git push -qf "$REMOTE" data
               ) && ok=$((ok+1))
             else
