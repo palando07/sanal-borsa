@@ -79,7 +79,13 @@ def parse(r):
     prev = before[-1] if before else meta.get("chartPreviousClose") or price
     reg = (meta.get("currentTradingPeriod") or {}).get("regular") or {}
     hist = [[t, round(c, 6)] for t, c in pts][-160:]
-    return {"p": price, "prev": prev, "t": t_last, "ps": reg.get("start"), "pe": reg.get("end"), "h": hist}
+    d = {"p": price, "prev": prev, "t": t_last, "ps": reg.get("start"), "pe": reg.get("end"), "h": hist}
+    # Bilgi kartı: gün ve 52 haftalık aralık, hacim
+    for k, m in (("dh", "regularMarketDayHigh"), ("dl", "regularMarketDayLow"),
+                 ("hi52", "fiftyTwoWeekHigh"), ("lo52", "fiftyTwoWeekLow"), ("vol", "regularMarketVolume")):
+        if meta.get(m) is not None:
+            d[k] = meta[m]
+    return d
 
 
 def main(out):
@@ -115,6 +121,7 @@ def main(out):
                 "p": d["p"] * k, "prev": d["prev"] * usd["prev"] / OZ_TO_GRAM,
                 "t": d["t"], "ps": d["ps"], "pe": d["pe"],
                 "h": [[t, round(c * k, 4)] for t, c in d["h"]],
+                **{f: d[f] * k for f in ("dh", "dl", "hi52", "lo52") if f in d},
             }
 
     if FAILS and os.environ.get("GITHUB_ACTIONS"):
