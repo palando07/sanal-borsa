@@ -1,0 +1,36 @@
+name: Fiyat geçmişini güncelle
+
+# Günlük kapanışlar: BIST kapanışından sonra ve ABD kapanışından sonra
+on:
+  schedule:
+    - cron: "30 15 * * 1-5"
+    - cron: "30 21 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["scripts/fetch_history.py", ".github/workflows/history.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: history
+  cancel-in-progress: true
+
+jobs:
+  history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: 5 yıllık günlük fiyatları çek
+        run: python3 scripts/fetch_history.py pub
+      - name: hist dalına yaz
+        # Geçmiş birikmesin diye hist dalı her seferinde tek commit olarak yeniden yazılır
+        run: |
+          cd pub
+          git init -q -b hist
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add . && git commit -qm "Geçmiş $(date -u +%Y-%m-%d)"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" hist
