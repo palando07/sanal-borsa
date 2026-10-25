@@ -235,6 +235,41 @@ tbody tr.click:hover{background:var(--sunk)}
 .ni .mt{font-size:12px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .ni .mt b{font-weight:600;color:var(--accent)}
 .nbar{display:flex;gap:6px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line);align-items:center;justify-content:space-between}
+.inds{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px}
+.inds button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:3px 10px 3px 8px;font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.inds button i{width:12px;height:3px;border-radius:2px;background:var(--c)}
+.inds button[aria-pressed="true"]{color:var(--fg);border-color:var(--c);font-weight:600}
+#rsiChart{height:64px;width:100%;display:block}
+.indnote{font-size:13px;display:grid;gap:3px}
+.indnote .muted{font-size:12px}
+.indhelp{font-size:12px;color:var(--muted)}
+.indhelp summary{cursor:pointer;color:var(--accent);font-weight:600}
+.indhelp p{margin:6px 0 0;max-width:65ch}
+.whatif{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:10px}
+.whatif h4,.dist h4{margin:0;font-size:13px;font-weight:600}
+.wirow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.wirow .inp{width:140px}
+.wirow .inp input{padding:7px 10px;font-size:14px}
+.wirow .inp span{padding:7px 10px}
+.wimain{font-size:14px;line-height:1.45}
+.wimain b{font-family:var(--font-num);font-weight:600}
+.wicmp{display:grid;grid-template-columns:auto minmax(40px,1fr) auto;gap:6px 10px;align-items:center;font-size:13px}
+.wicmp .bar{height:8px;border-radius:4px;background:var(--sunk);position:relative;overflow:hidden}
+.wicmp .bar i{position:absolute;top:0;bottom:0;left:0;border-radius:4px}
+.wicmp .bar i.up{background:var(--up)} .wicmp .bar i.down{background:var(--down)}
+.wicmp .v{font-family:var(--font-num);text-align:right;white-space:nowrap}
+.wicmp .me{font-weight:600}
+.dist{padding:12px 14px;display:grid;gap:14px;border-bottom:1px solid var(--line)}
+.sbar{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;background:var(--sunk);margin-top:8px}
+.sbar i{display:block;height:100%;min-width:3px}
+.leg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;margin-top:8px;color:var(--muted)}
+.leg span{display:inline-flex;align-items:center;gap:5px}
+.leg i{width:9px;height:9px;border-radius:2px;flex:none}
+.leg b{font-family:var(--font-num);font-weight:500;color:var(--fg)}
+.risk{display:grid;gap:6px}
+.risk div{font-size:13px;padding:8px 10px;border-radius:6px;background:var(--warn-bg);line-height:1.4}
+.risk div.ok{background:var(--up-bg)}
+.risk div.neutral{background:var(--sunk)}
 .dnews{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:4px}
 .dnews h4{margin:0 0 4px;font-size:13px;font-weight:600}
 .dnews .ni{padding:8px 0}
@@ -368,7 +403,11 @@ td.nt input{width:100%;font:inherit;border:1px solid var(--accent);border-radius
           </div>
         </div>
         <div class="chartwrap" id="chartWrap"><canvas id="assetChart" role="img" aria-label="Fiyat grafiği"></canvas><div class="cross" id="cross" hidden></div></div>
-        <div class="ptime"><div class="ranges" role="group" aria-label="Grafik aralığı"><button type="button" data-r="1" aria-pressed="false">1 gün</button><button type="button" data-r="5" aria-pressed="true">5 gün</button></div><span id="dTime"></span></div>
+        <div class="ptime"><div class="ranges" role="group" aria-label="Grafik aralığı"><button type="button" data-r="1" aria-pressed="false">1G</button><button type="button" data-r="5" aria-pressed="true">5G</button><button type="button" data-r="90" aria-pressed="false">3A</button><button type="button" data-r="365" aria-pressed="false">1Y</button><button type="button" data-r="1825" aria-pressed="false">5Y</button></div><span id="dTime"></span></div>
+        <div class="inds" id="inds" hidden role="group" aria-label="Göstergeler"><button type="button" data-i="ma20" style="--c:#3B82F6"><i></i>Ort. 20</button><button type="button" data-i="ma50" style="--c:#F59E0B"><i></i>Ort. 50</button><button type="button" data-i="ma200" style="--c:#A855F7"><i></i>Ort. 200</button><button type="button" data-i="rsi" style="--c:var(--accent)"><i></i>RSI</button></div>
+        <canvas id="rsiChart" hidden role="img" aria-label="RSI göstergesi"></canvas>
+        <div class="indnote" id="indNote" hidden></div>
+        <details class="indhelp" id="indHelp" hidden><summary>Bu çizgiler ne anlama geliyor?</summary><p><b>Hareketli ortalama (Ort. 20 / 50 / 200):</b> son 20, 50 ya da 200 işlem gününün ortalama kapanış fiyatı. Fiyat ortalamanın üstündeyse eğilim yukarı, altındaysa aşağı kabul edilir. Kısa ortalamanın uzun ortalamayı yukarı kesmesine "altın kesişim", aşağı kesmesine "ölüm kesişimi" denir.</p><p><b>RSI (14 gün):</b> son 14 günün yükselişlerini düşüşleriyle kıyaslar, 0 ile 100 arasında bir değer verir. 70 üstü "aşırı alım" (fiyat kısa sürede çok yükseldi, soluklanabilir), 30 altı "aşırı satım" (çok hızlı düştü, tepki gelebilir) diye yorumlanır.</p><p>Bu göstergeler geçmiş fiyatlardan hesaplanır, geleceği bilmez. Güçlü yükselişlerde RSI haftalarca 70 üstünde kalabilir. Tek başına al-sat sinyali olarak değil, fiyatın nerede durduğunu anlamak için kullan.</p></details>
         <div class="pos" id="dPos"></div>
         <div class="info" id="dInfo"></div>
         <div class="alform">
@@ -423,6 +462,14 @@ td.nt input{width:100%;font:inherit;border:1px solid var(--accent);border-radius
           <div class="err" id="err" role="status"></div>
           <button class="go" id="go" type="submit" disabled>Al</button>
         </form>
+        <section class="whatif" aria-label="Ya o zaman alsaydım?">
+          <h4>Ya o zaman alsaydım?</h4>
+          <div class="wirow">
+            <div class="inp"><input id="wiAmt" inputmode="decimal" autocomplete="off" value="10.000" aria-label="Tutar"><span>₺</span></div>
+            <div class="seg" role="group" aria-label="Ne kadar önce" id="wiPer"><button type="button" data-p="30" aria-pressed="false">1 ay</button><button type="button" data-p="182" aria-pressed="false">6 ay</button><button type="button" data-p="365" aria-pressed="true">1 yıl</button><button type="button" data-p="1095" aria-pressed="false">3 yıl</button><button type="button" data-p="1825" aria-pressed="false">5 yıl</button></div>
+          </div>
+          <div id="wiRes" class="muted">Geçmiş fiyatlar yükleniyor…</div>
+        </section>
         <div class="dnews" id="dNews" hidden></div>
       </div>
     </section>
@@ -462,7 +509,9 @@ td.nt input{width:100%;font:inherit;border:1px solid var(--accent);border-radius
     <details><summary>Komisyon</summary><p>Aracı kurumların her işlemden aldığı ücrettir; burada %0,1. Tek işlemde küçük görünür ama sık al-sat yapınca birikir ve getirini yer. İşlem geçmişinde toplam ödediğin komisyonu görebilirsin.</p></details>
     <details><summary>Hacim</summary><p>O gün el değiştiren hisse sayısıdır. Yüksek hacimli bir yükseliş genelde daha güçlü bir ilgiyi, düşük hacimli bir hareket ise zayıf bir ilgiyi gösterir. Hacmi çok düşük hisselerde istediğin fiyattan alıp satmak zorlaşabilir.</p></details>
     <details><summary>Gün aralığı ve 52 haftalık aralık</summary><p>Gün aralığı, fiyatın bugün gördüğü en düşük ve en yüksek seviyedir. 52 haftalık aralık ise son bir yılınkidir. Fiyatın bu aralığın neresinde olduğu, hissenin yakın geçmişine göre pahalı mı ucuz mu göründüğüne dair kaba bir fikir verir. Ama bir yılın dibinde olan hisse daha da düşebilir.</p></details>
-    <details><summary>Çeşitlendirme</summary><p>Tüm paranı tek bir hisseye yatırmak, o şirkette bir sorun çıkınca hepsini riske atmak demektir. Farklı sektörlere, farklı varlıklara (hisse, altın, döviz) dağılmak tek bir kötü haberin etkisini azaltır. Portföy bölümündeki "Ağırlık" sütunu dağılımını gösterir.</p></details>
+    <details><summary>Çeşitlendirme</summary><p>Tüm paranı tek bir hisseye yatırmak, o şirkette bir sorun çıkınca hepsini riske atmak demektir. Farklı sektörlere, farklı varlıklara (hisse, altın, döviz) dağılmak tek bir kötü haberin etkisini azaltır. Portföy bölümündeki dağılım çubukları ve risk uyarıları paranın nerede yoğunlaştığını gösterir.</p></details>
+    <details><summary>Hareketli ortalama ve RSI</summary><p>Grafikte 3A, 1Y ya da 5Y seçince çıkar. <b>Hareketli ortalama</b> son 20, 50 ya da 200 günün ortalama fiyatıdır; fiyat bunun üstündeyse eğilim yukarı kabul edilir. <b>RSI</b> 0–100 arası bir değerdir: 70 üstü fiyatın kısa sürede çok yükseldiğini, 30 altı çok hızlı düştüğünü gösterir. İkisi de geçmişe bakar, geleceği tahmin etmez.</p></details>
+    <details><summary>"Ya o zaman alsaydım?"</summary><p>Bir varlığa geçmişte yatırım yapsaydın bugün ne olurdu, bunu BIST 100, gram altın ve dolarla aynı dönemde karşılaştırır. Bir hisse geçmişte çok kazandırmış olabilir ama asıl soru aynı dönemde altını ya da endeksi geçip geçmediğidir. Geçmiş getiri geleceğin garantisi değildir.</p></details>
     <details><summary>Haberler ve fiyat</summary><p>Fiyatlar çoğu zaman haber çıkmadan önce beklentiyle hareket eder. Haber çıktığında hareketin büyük kısmı çoktan olmuş olabilir. "Söylentide al, haberde sat" sözü bundandır. Haberi okuyup hemen işlem yapmak yerine yatırım günlüğüne not alıp sonucunu izlemek daha öğreticidir.</p></details>
     <details><summary>Kur etkisi: ABD hisseleri ve kripto</summary><p>ABD hisseleri ve kripto paralar dolar cinsindendir. TL karşılığı hem hissenin dolar fiyatından hem de dolar kurundan etkilenir. Hisse dolar bazında yerinde saysa bile kur yükselirse TL bazında kazanç görebilirsin.</p></details>
     <details><summary>Kripto paralar</summary><p>Kripto paralar 7/24 işlem görür ve hisselere göre çok daha sert hareket eder. Bir günde %10'luk düşüşler olağandır. Arkasında kâr eden bir şirket yoktur; fiyat tamamen arz ve talebe bağlıdır.</p></details>
@@ -482,6 +531,7 @@ td.nt input{width:100%;font:inherit;border:1px solid var(--accent);border-radius
 (function(){
 const DATA_URL='https://raw.githubusercontent.com/palando07/sanal-borsa/data/prices.json';
 const NEWS_URL='https://raw.githubusercontent.com/palando07/sanal-borsa/data/news.json';
+const HIST_URL='https://raw.githubusercontent.com/palando07/sanal-borsa/hist/';
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function ago(t){const m=Math.max(0,Math.round((Date.now()-t)/60000));return m<60?m+' dk önce':m<1440?Math.round(m/60)+' sa önce':Math.round(m/1440)+' gün önce'}
 const KEY='sanal-borsa-v2', DKEY='sanal-borsa-veri', START_CASH=100000, FEE=0.001;
@@ -684,7 +734,7 @@ function drawChart(cv,vals,opt={}){
   const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
   if(vals.length<2)return;
   const padR=opt.labels?70:6, padT=8, padB=8, cw=w-padR, ch=h-padT-padB;
-  const ex=(opt.extra||[]).filter(v=>v!=null);
+  const ex=(opt.extra||[]).concat(...(opt.lines||[]).map(l=>l.v)).filter(v=>v!=null);
   let mn=Math.min(...vals,...ex), mx=Math.max(...vals,...ex);
   if(opt.base!=null){mn=Math.min(mn,opt.base);mx=Math.max(mx,opt.base)}
   if(mx===mn){mx+=Math.abs(mx)*.01||1;mn-=Math.abs(mn)*.01||1}
@@ -712,6 +762,56 @@ function drawChart(cv,vals,opt={}){
     opt.extra.forEach((v,i)=>{if(v==null){on=false;return}on?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));on=true});
     g.stroke();g.setLineDash([]);
   }
+  (opt.lines||[]).forEach(l=>{
+    g.strokeStyle=l.color;g.lineWidth=1.25;g.beginPath();let on=false;
+    l.v.forEach((v,i)=>{if(v==null){on=false;return}on?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));on=true});
+    g.stroke();
+  });
+}
+// ---- 5 yıllık günlük geçmiş (hist dalı) ----
+const HV={}, HP={};
+function hist(code){
+  if(code in HV)return HV[code];
+  if(!HP[code])HP[code]=fetch(HIST_URL+encodeURIComponent(code)+'.json?t='+Math.floor(Date.now()/216e5),{cache:'no-store'})
+    .then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{
+      HV[code]=j&&j.d&&j.d.length>1?j:null; delete HP[code];
+      if(!HV[code])setTimeout(()=>{if(HV[code]===null)delete HV[code]},60000);
+      renderDetail();
+    });
+  return undefined;
+}
+// Günlük kapanışlar [saniye, fiyat]; son nokta güncel fiyat
+function dailyPts(s){
+  const h=hist(s); if(!h)return h;
+  const out=h.d.map((d,i)=>[d*86400,h.c[i]]);
+  const dn=Math.floor((LIVE[s]?Date.now()/1000:A(s).t)/86400), p=nat(s);
+  if(h.d[h.d.length-1]>=dn)out[out.length-1]=[out[out.length-1][0],p]; else out.push([dn*86400,p]);
+  return out;
+}
+function sma(c,n){const o=new Array(c.length).fill(null);let sum=0;for(let i=0;i<c.length;i++){sum+=c[i];if(i>=n)sum-=c[i-n];if(i>=n-1)o[i]=sum/n}return o}
+function rsi(c,n=14){
+  const o=new Array(c.length).fill(null); if(c.length<=n)return o;
+  let g=0,l=0; for(let i=1;i<=n;i++){const d=c[i]-c[i-1];if(d>0)g+=d;else l-=d}
+  g/=n;l/=n; o[n]=l?100-100/(1+g/l):100;
+  for(let i=n+1;i<c.length;i++){const d=c[i]-c[i-1];g=(g*(n-1)+Math.max(d,0))/n;l=(l*(n-1)+Math.max(-d,0))/n;o[i]=l?100-100/(1+g/l):100}
+  return o;
+}
+function prepCanvas(cv){
+  const dpr=window.devicePixelRatio||1, w=cv.clientWidth, h=cv.clientHeight;
+  if(!w||!h)return null;
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  const g=cv.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+  return {g,w,h};
+}
+function drawRSI(cv,vals){
+  const c=prepCanvas(cv); if(!c||vals.length<2)return; const {g,w,h}=c;
+  const cw=w-70, X=i=>i/(vals.length-1)*(cw-4)+2, Y=v=>4+(1-v/100)*(h-8);
+  g.fillStyle=css('--sunk'); g.fillRect(0,Y(70),cw,Y(30)-Y(70));
+  g.font='11px '+css('--font-num'); g.textBaseline='middle'; g.fillStyle=css('--muted'); g.strokeStyle=css('--line'); g.lineWidth=1;
+  [70,30].forEach(v=>{g.setLineDash([3,4]);g.beginPath();g.moveTo(0,Y(v));g.lineTo(cw,Y(v));g.stroke();g.setLineDash([]);g.fillText(String(v),cw+6,Y(v))});
+  g.fillText('RSI',cw+28,Y(50));
+  g.strokeStyle=css('--accent'); g.lineWidth=1.5; g.beginPath(); let on=false;
+  vals.forEach((v,i)=>{if(v==null){on=false;return}on?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));on=true}); g.stroke();
 }
 const shortTL=v=>v>=1e6?f2.format(v/1e6)+' Mn':v>=1e4?f0.format(v):f2.format(v);
 
@@ -775,7 +875,11 @@ function select(s,scroll){
   S.sel=s; renderList(false); renderDetail(); $('qty').value=''; $('opr').value=otype!=='mkt'&&A(s)?String(+nat(s).toPrecision(6)).replace('.',','):''; updateEst(); save();
   if(scroll)openSheet();
 }
-let range=5, chartPts=[], hovering=false;
+let range=5, chartPts=[], chartRsi=null, hovering=false;
+const IND={ma20:false,ma50:true,ma200:false,rsi:true};
+try{Object.assign(IND,JSON.parse(localStorage.getItem('sanal-borsa-gosterge')||'{}'))}catch(e){}
+$('inds').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;IND[b.dataset.i]=!IND[b.dataset.i];try{localStorage.setItem('sanal-borsa-gosterge',JSON.stringify(IND))}catch(e){}renderDetail()});
+const dmy=t=>new Date(t).toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
 $('chartWrap').closest('.detail').querySelector('.ranges').addEventListener('click',e=>{const b=e.target.closest('[data-r]');if(!b)return;range=+b.dataset.r;
   b.parentNode.querySelectorAll('[data-r]').forEach(x=>x.setAttribute('aria-pressed',x===b));renderDetail()});
 // Grafiğe dokununca/üzerine gelince o anın fiyatını göster
@@ -783,7 +887,8 @@ function chartHover(e){
   const cv=$('assetChart'), r=cv.getBoundingClientRect(), cw=cv.clientWidth-70, n=chartPts.length; if(n<2)return;
   const x=Math.min(Math.max(e.clientX-r.left,2),cw-2), i=Math.round((x-2)/(cw-4)*(n-1)), p=chartPts[Math.max(0,Math.min(n-1,i))];
   hovering=true; const c=$('cross'); c.hidden=false; c.style.left=(2+i/(n-1)*(cw-4))+'px';
-  $('dTime').textContent=dmhm(p[0]*1000)+' · '+fmtNative(S.sel,p[1]);
+  const ri=chartRsi&&chartRsi[Math.max(0,Math.min(n-1,i))];
+  $('dTime').textContent=(range>5?dmy(p[0]*1000):dmhm(p[0]*1000))+' · '+fmtNative(S.sel,p[1])+(ri!=null?' · RSI '+f0.format(ri):'');
 }
 function chartLeave(){hovering=false;$('cross').hidden=true;renderDetail()}
 $('chartWrap').addEventListener('pointermove',chartHover);
@@ -853,10 +958,8 @@ function renderDetail(){
   renderInfo(s); renderAlerts(s);
   $('dPrice').textContent=fmtNative(s,p);
   $('dChg').innerHTML=`<span class="${cls(ch)}">${pct(ch)} ${a.c==='Kripto'?'24 saat':'bugün'}</span>`+(a.cur==='USD'?` <span class="muted">· ${tl(tlPrice(s))}</span>`:'');
-  const pts=range===1?dayPts(s):a.h.concat(LIVE[s]?[[Date.now()/1000,LIVE[s].p]]:[]);
-  chartPts=pts;
-  drawChart($('assetChart'),pts.map(x=>x[1]),{base:range===1?prevOf(s):null,labels:v=>(a.cur==='USD'?'$':'')+(v>=1e4?f0.format(v):priceFmt(v))});
-  if(!hovering)$('dTime').textContent=a.c==='Kripto'&&LIVE[s]?'Canlı fiyat (Binance)':dmhm(a.t*1000)+(isOpen(s)?'':' · piyasa kapalı');
+  renderChart(s);
+  renderWhatIf();
   $('dTopNote').textContent=isOpen(s)?'':'Piyasa kapalı';
   const h=S.hold[s];
   if(h){
@@ -869,6 +972,72 @@ function renderDetail(){
   const cn=$('closedNote');
   cn.hidden=isOpen(s)||otype!=='mkt';
   if(!isOpen(s))cn.textContent='Piyasa şu an kapalı. Emrin son fiyattan ('+dmhm(a.t*1000)+') gerçekleşir.';
+}
+function renderChart(s){
+  const a=A(s), daily=range>5, lbl=v=>(a.cur==='USD'?'$':'')+(v>=1e4?f0.format(v):priceFmt(v));
+  let pts, lines=[], rs=null, note='';
+  if(daily){
+    const all=dailyPts(s);
+    if(!all){pts=[];note=all===undefined?'Geçmiş fiyatlar yükleniyor…':'Bu varlığın geçmiş fiyatları şu an alınamadı.'}
+    else{
+      const c=all.map(x=>x[1]), from=all.findIndex(x=>x[0]>=all[all.length-1][0]-range*86400), k=Math.max(0,from);
+      pts=all.slice(k);
+      const m={ma20:sma(c,20),ma50:sma(c,50),ma200:sma(c,200)}, r=rsi(c);
+      [['ma20','#3B82F6'],['ma50','#F59E0B'],['ma200','#A855F7']].forEach(([key,color])=>{if(IND[key])lines.push({v:m[key].slice(k),color})});
+      if(IND.rsi)rs=r.slice(k);
+      // Kısa yorum
+      const p=c[c.length-1], L=i=>i[i.length-1], parts=[];
+      if(L(m.ma50)!=null){const d=p/L(m.ma50)-1;parts.push(`Fiyat 50 günlük ortalamanın <b class="${cls(d)}">${pct(Math.abs(d)).replace(/^[+−]/,'')} ${d>=0?'üstünde':'altında'}</b>`)}
+      if(L(m.ma50)!=null&&L(m.ma200)!=null)parts.push(L(m.ma50)>=L(m.ma200)?'50 günlük ortalama 200 günlüğün üstünde: <b class="up">uzun vadeli eğilim yukarı</b>':'50 günlük ortalama 200 günlüğün altında: <b class="down">uzun vadeli eğilim aşağı</b>');
+      const rv=L(r);
+      if(rv!=null)parts.push(`RSI ${f0.format(rv)}: `+(rv>=70?'<b class="down">aşırı alım bölgesi</b>, fiyat kısa sürede çok yükseldi':rv<=30?'<b class="up">aşırı satım bölgesi</b>, fiyat kısa sürede çok düştü':'normal bölgede'));
+      note=parts.map(x=>`<span>${x}.</span>`).join('');
+      const first=all[0][0], firstAvail=first>all[all.length-1][0]-range*86400+5*86400;
+      if(firstAvail)note+=`<span class="muted">Bu varlığın verisi ${dmy(first*1000)} tarihinden başlıyor.</span>`;
+    }
+  } else pts=range===1?dayPts(s):a.h.concat(LIVE[s]?[[Date.now()/1000,LIVE[s].p]]:[]);
+  chartPts=pts; chartRsi=rs;
+  $('inds').hidden=!daily; $('indHelp').hidden=!daily;
+  $('inds').querySelectorAll('[data-i]').forEach(b=>b.setAttribute('aria-pressed',!!IND[b.dataset.i]));
+  $('indNote').hidden=!daily||!note; $('indNote').innerHTML=note;
+  $('rsiChart').hidden=!rs;
+  drawChart($('assetChart'),pts.map(x=>x[1]),{base:range===1?prevOf(s):null,labels:lbl,lines});
+  if(rs)drawRSI($('rsiChart'),rs);
+  if(!hovering)$('dTime').textContent=daily&&pts.length?dmy(pts[0][0]*1000)+' → bugün':a.c==='Kripto'&&LIVE[s]?'Canlı fiyat (Binance)':dmhm(a.t*1000)+(isOpen(s)?'':' · piyasa kapalı');
+}
+// ---- Ya o zaman alsaydım? ----
+let wiDays=365;
+$('wiPer').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;wiDays=+b.dataset.p;b.parentNode.querySelectorAll('[data-p]').forEach(x=>x.setAttribute('aria-pressed',x===b));renderWhatIf()});
+$('wiAmt').addEventListener('input',()=>renderWhatIf());
+$('wiAmt').addEventListener('blur',()=>{const v=parseNum($('wiAmt').value.replace(/\.(?=\d{3}(\D|$))/g,''));if(v>0)$('wiAmt').value=f0.format(v)});
+const WI_NAME={XU100:'BIST 100',GAU:'Gram altın',USD:'Dolar'};
+function wiPeriod(d){return {30:'1 ay',182:'6 ay',365:'1 yıl',1095:'3 yıl',1825:'5 yıl'}[d]}
+function renderWhatIf(){
+  const s=S.sel, amt=parseNum($('wiAmt').value.replace(/\.(?=\d{3}(\D|$))/g,'')), box=$('wiRes');
+  if(!D||!A(s))return;
+  const codes=[s,'XU100','GAU','USD'].filter((c,i,arr)=>arr.indexOf(c)===i&&A(c));
+  const hs=codes.map(hist), uh=hist('USD');
+  if(hs[0]===undefined||(uh===undefined&&A(s).cur==='USD')){box.className='muted';box.textContent='Geçmiş fiyatlar yükleniyor…';return}
+  if(!hs[0]){box.className='muted';box.textContent='Bu varlığın geçmiş fiyatları şu an alınamadı.';return}
+  if(!(amt>0)){box.className='muted';box.textContent='Bir tutar gir.';return}
+  const day0=Math.floor(Date.now()/86400000)-wiDays;
+  const usdAt=d=>{if(!uh)return 0;let v=0;for(let i=0;i<uh.d.length&&uh.d[i]<=d;i++)v=uh.c[i];return v||uh.c[0]};
+  const calc=(c,h,start)=>{
+    if(!h)return null; const i=h.d.findIndex(d=>d>=start); if(i<0)return null;
+    let p0=h.c[i]; if(A(c).cur==='USD'){const u=usdAt(h.d[i]);if(!u)return null;p0*=u}
+    const r=tlPrice(c)/p0-1; return {c,d:h.d[i],r,v:amt*(1+r)};
+  };
+  const me=calc(s,hs[0],day0); if(!me){box.className='muted';box.textContent='Bu dönem için veri yok.';return}
+  const late=me.d-day0>7, start=late?me.d:day0;
+  const rows=[me].concat(codes.slice(1).map((c,i)=>calc(c,hs[i+1],start)).filter(Boolean));
+  const mx=Math.max(...rows.map(x=>Math.abs(x.r)))||1;
+  const best=rows.slice().sort((x,y)=>y.r-x.r)[0];
+  box.className='';
+  box.innerHTML=(late?`<p class="muted" style="margin:0 0 6px">${esc(s)} verisi ${dmy(me.d*86400000)} tarihinden başlıyor; hesap o günden.</p>`:'')+
+    `<div class="wimain">${late?dmy(me.d*86400000):`<b>${wiPeriod(wiDays)} önce</b> (${dmy(me.d*86400000)})`} <b>${tl(amt)}</b> ile <b>${esc(s)}</b> alsaydın, bugün <b class="${cls(me.r)}">${tl(me.v)}</b> olurdu <span class="${cls(me.r)}">(${pct(me.r)})</span>.</div>`+
+    `<div class="muted" style="font-size:12px;margin:8px 0 6px">Aynı parayla aynı gün şunları alsaydın:</div>`+
+    `<div class="wicmp">${rows.map(x=>`<span class="${x===me?'me':''}">${x===me?esc(s):WI_NAME[x.c]||x.c}</span><span class="bar"><i class="${x.r>=0?'up':'down'}" style="width:${(Math.abs(x.r)/mx*100).toFixed(1)}%"></i></span><span class="v ${x===me?'me':''}">${tl(x.v)} <span class="${cls(x.r)}">${pct(x.r)}</span></span>`).join('')}</div>`+
+    `<p class="muted" style="font-size:12px;margin:8px 0 0">${best===me?`Bu dönemde ${esc(s)} karşılaştırılanların en iyisi oldu.`:`Bu dönemde en çok ${WI_NAME[best.c]||best.c} kazandırdı.`}${A(s).cur==='USD'?' Dolar bazlı varlıkta kur değişimi de hesaba katıldı.':''} Temettü ve komisyon dahil değil. Geçmiş getiri geleceğin garantisi değildir.</p>`;
 }
 function parseNum(v){v=(v||'').replace(/\s/g,'');if(v.includes(',')&&v.includes('.'))v=v.replace(/\./g,'');v=v.replace(',','.');const n=parseFloat(v);return isFinite(n)?n:0}
 function roundQ(s,q){return isDec(s)?Math.floor(q*1e6)/1e6:Math.floor(q+1e-9)}
@@ -1050,6 +1219,59 @@ function renderPerf(){
   html+=`<div class="sect">Yatırım günlüğü</div>`+(jr||`<div class="empty">Bir varlığı satınca, alırken ve satarken yazdığın notlar sonucuyla birlikte burada yan yana görünecek. Hangi gerekçelerin işe yaradığını buradan takip edebilirsin.</div>`);
   $('paneP').innerHTML=html;
 }
+const SECTOR={};
+Object.entries({
+  'Bankacılık':'AKBNK ALBRK GARAN HALKB ISCTR SKBNK TSKB VAKBN YKBNK JPM BAC',
+  'Holding':'AGHOL ALARK BERA BINHO BRYAT DOHOL KCHOL RALYH SAHOL TKFEN',
+  'Finans ve sigorta':'ANSGR ISMEN KTLEV TURSG PYPL COIN V MA BRK.B',
+  'Enerji':'AHGAZ AKFYE AKSEN ALFAS ASTOR CANTE CWENE ENERY ENJSA EUPWR GESAN ODAS SMRTG YEOTK ZOREN XOM CVX',
+  'Petrokimya ve kimya':'AKSA GUBRF HEKTS PETKM SASA TUPRS',
+  'Metal ve madencilik':'BRSAN EREGL KCAER KRDMD TRALT',
+  'Otomotiv':'DOAS EGEEN FROTO OTKAR TOASO TTRAK TSLA F GM',
+  'Havacılık ve ulaşım':'CLEBI GRSEL PASEU PGSUS TAVHL THYAO BA UBER',
+  'Savunma':'ALTNY ASELS',
+  'Teknoloji':'ARDYZ KONTR MIATK REEDR AAPL MSFT NVDA GOOGL META AVGO ORCL AMD INTC QCOM MU TSM ASML CRM ADBE PLTR SHOP',
+  'Telekom ve medya':'TCELL TTKOM NFLX SPOT DIS',
+  'Perakende':'BIMAS MAVI MGROS SOKM AMZN BABA WMT COST NKE',
+  'Gıda ve içecek':'AEFES CCOLA OBAMS TABGD TUKAS ULKER KO PEP MCD SBUX',
+  'İnşaat ve çimento':'BSOKE BTCIM CIMSA ENKAI GLRMK GOLTS KONYA LMKDC OYAKC',
+  'Gayrimenkul':'EKGYO ABNB',
+  'Dayanıklı tüketim':'ARCLK VESBE VESTL',
+  'Sanayi':'SISE',
+  'Sağlık':'ECILC MPARK SELEC LLY JNJ PFE',
+  'Spor':'FENER GSRAY',
+  'Endeks fonu':'SPY QQQ DIA VT EEM TUR',
+  'Altın ve emtia':'GLD GAU GAG XAU XAG BRENT',
+  'Tahvil':'TLT'
+}).forEach(([k,v])=>v.split(' ').forEach(c=>SECTOR[c]=k));
+const sectorOf=s=>SECTOR[s]||(A(s)&&{Kripto:'Kripto',Döviz:'Döviz'}[A(s).c])||'Diğer';
+const PAL=['#3B82F6','#F59E0B','#10B981','#A855F7','#EF4444','#06B6D4','#EC4899','#84CC16','#F97316','#6366F1'];
+function stack(title,parts,sub){
+  const sum=parts.reduce((x,p)=>x+p[1],0)||1;
+  return `<div><h4>${title}${sub?` <span class="muted" style="font-weight:400">${sub}</span>`:''}</h4><div class="sbar">${parts.map(p=>`<i style="width:${(p[1]/sum*100).toFixed(2)}%;background:${p[2]}" title="${esc(p[0])} ${f0.format(p[1]/sum*100)}%"></i>`).join('')}</div><div class="leg">${parts.map(p=>`<span><i style="background:${p[2]}"></i>${esc(p[0])} <b>${f0.format(p[1]/sum*100)}%</b></span>`).join('')}</div></div>`;
+}
+function renderDist(){
+  const T=total(), syms=Object.keys(S.hold); if(!syms.length||!T)return '';
+  const val=s=>S.hold[s].q*tlPrice(s), cat=s=>A(s)?A(s).c:'Diğer';
+  const group=(list,key)=>{const m={};list.forEach(s=>{const k=key(s);m[k]=(m[k]||0)+val(s)});return Object.entries(m).sort((a,b)=>b[1]-a[1])};
+  const types=group(syms,cat).map((p,i)=>[p[0],p[1],PAL[i%PAL.length]]);
+  if(S.cash>0)types.push(['Nakit',S.cash,'#9CA3AF']);
+  const stocks=syms.filter(s=>cat(s)==='BIST'||cat(s)==='ABD');
+  const secs=group(stocks,sectorOf).map((p,i)=>[p[0],p[1],PAL[i%PAL.length]]);
+  // Risk kontrolü
+  const W=[], share=v=>'%'+f0.format(v/T*100);
+  const top=syms.slice().sort((a,b)=>val(b)-val(a))[0], tv=val(top);
+  if(tv/T>.25)W.push(['',`Paranın <b>${share(tv)}</b> kadarı tek varlıkta: <b>${esc(top)}</b>. Bu varlık %20 düşerse toplam paran yaklaşık <b>${tl(tv*.2)}</b> azalır.`]);
+  const ts=secs[0]; if(ts&&ts[1]/T>.35)W.push(['',`Paranın <b>${share(ts[1])}</b> kadarı <b>${esc(ts[0])}</b> sektöründe. Aynı sektördeki hisseler genelde birlikte düşüp çıkar; tek bir kötü haber hepsini etkiler.`]);
+  const cr=syms.filter(s=>cat(s)==='Kripto').reduce((x,s)=>x+val(s),0);
+  if(cr/T>.2)W.push(['',`Paranın <b>${share(cr)}</b> kadarı kriptoda. Kripto paralar bir günde %10'dan fazla oynayabilir; bu oran yüksek sayılır.`]);
+  if(syms.length<3&&invValue()/T>.5)W.push(['',`Yalnızca ${syms.length} varlığa yatırım yaptın. Farklı sektör ve türlere dağıtmak tek bir kötü haberin etkisini azaltır.`]);
+  if(S.cash/T<.05)W.push(['neutral',`Nakdin neredeyse bitti (${share(S.cash)}). Düşüşte alım yapmak ya da bir fırsatı değerlendirmek istersen elinde para olmaz.`]);
+  if(!W.length)W.push(['ok','✓ Paran tek bir varlıkta, sektörde ya da riskli bir türde yoğunlaşmamış. Dağılım dengeli görünüyor.']);
+  const ux=syms.filter(s=>A(s)&&(A(s).cur==='USD'||s==='USD')).reduce((x,s)=>x+val(s),0);
+  if(ux>0)W.push(['neutral',`Paranın ${share(ux)} kadarı dolar bazlı varlıklarda. Dolar TL karşısında yükselirse bu kısım TL olarak değer kazanır, düşerse kaybeder.`]);
+  return `<div class="dist">${stack('Varlık türü',types)}${secs.length?stack('Hisselerin sektörleri',secs,'(hisse yatırımının içinde)'):''}<div><h4>Risk kontrolü</h4><div class="risk" style="margin-top:8px">${W.map(w=>`<div class="${w[0]}">${w[0]?'':'⚠️ '}${w[1]}</div>`).join('')}</div></div></div>`;
+}
 function renderBottom(){
   $('tabO').textContent='Emirler'+(S.orders.length?' ('+S.orders.length+')':'');
   const nc=S.orders.length+S.alerts.length; $('navCnt').hidden=!nc; $('navCnt').textContent=nc;
@@ -1061,7 +1283,7 @@ function renderBottom(){
     $('tabNote').textContent=syms.length?syms.length+' pozisyon':'';
     if(!syms.length){$('paneH').innerHTML=`<div class="empty">Henüz bir yatırımın yok. Piyasadan bir varlık seçip <b>Al</b> ile ilk işlemini yap.</div>`;return}
     const iv=invValue()||1;
-    $('paneH').innerHTML=`<div class="tblwrap"><table><thead><tr><th>Varlık</th><th>Miktar</th><th>Ort. maliyet</th><th>Güncel fiyat</th><th>Bugün</th><th>Değer</th><th>Ağırlık</th><th>K/Z</th><th>K/Z %</th></tr></thead><tbody>${
+    $('paneH').innerHTML=renderDist()+`<div class="tblwrap"><table><thead><tr><th>Varlık</th><th>Miktar</th><th>Ort. maliyet</th><th>Güncel fiyat</th><th>Bugün</th><th>Değer</th><th>Ağırlık</th><th>K/Z</th><th>K/Z %</th></tr></thead><tbody>${
       syms.sort((x,y)=>S.hold[y].q*tlPrice(y)-S.hold[x].q*tlPrice(x)).map(s=>{
         const h=S.hold[s],p=tlPrice(s),val=h.q*p,pl=val-h.cost,day=A(s)?nat(s)/prevOf(s)-1:0;
         return `<tr class="click" data-s="${s}"><td class="t"><b>${s}</b> <span class="muted">${nameOf(s)}</span></td><td>${fmtQty(s,h.q)}</td><td>${tl(h.cost/h.q)}</td><td>${tl(p)}</td><td class="${cls(day)}">${pct(day)}</td><td>${tl(val)}</td><td>${f2.format(val/iv*100)}%</td><td class="${cls(pl)}">${signed(pl,tl)}</td><td class="${cls(pl)}">${pct(pl/h.cost)}</td></tr>`}).join('')
