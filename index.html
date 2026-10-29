@@ -277,6 +277,17 @@ tbody tr.click:hover{background:var(--sunk)}
 td.nt{font-family:var(--font-ui);white-space:normal;min-width:160px;max-width:280px;text-align:left;color:var(--muted);cursor:text}
 td.nt:hover{color:var(--fg)}
 td.nt input{width:100%;font:inherit;border:1px solid var(--accent);border-radius:6px;padding:4px 6px;background:var(--bg);color:var(--fg)}
+.exitbox{display:grid;gap:8px}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--accent)}
+.exitf{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.exitf .inp input{padding:7px 8px;font-size:14px}
+.exitf .inp span{padding:7px 8px;font-size:12px;white-space:nowrap}
+.exitf .pos{grid-column:1/-1}
+.week{padding:12px 14px;border-bottom:1px solid var(--line);display:grid;gap:6px}
+.week h4{margin:0;font-size:13px;font-weight:600}
+.week p{margin:0;font-size:14px;line-height:1.45}
+.week .muted{font-size:12px}
 .jl{display:grid;gap:4px;padding:11px 14px;border-bottom:1px solid var(--line)}
 .jl:last-child{border-bottom:0}
 .jl .h{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
@@ -430,10 +441,19 @@ td.nt input{width:100%;font:inherit;border:1px solid var(--accent);border-radius
                 <button type="button" data-o="mkt" aria-pressed="true">Piyasa</button>
                 <button type="button" data-o="lmt" aria-pressed="false">Limit</button>
                 <button type="button" data-o="stp" aria-pressed="false">Stop</button>
+                <button type="button" data-o="trl" aria-pressed="false">İz süren</button>
               </div>
             </div>
             <div class="pos" id="oHint" hidden></div>
             <div class="inp" id="oprBox" hidden><input id="opr" inputmode="decimal" autocomplete="off" placeholder="Tetik fiyatı" aria-label="Tetik fiyatı"><span id="oprUnit">₺</span></div>
+          </div>
+          <div class="field exitbox" id="exitBox">
+            <label class="chk"><input type="checkbox" id="exitOn"> Çıkış planı ekle (kâr al ve zarar durdur)</label>
+            <div class="exitf" id="exitFields" hidden>
+              <div class="inp"><span>Kâr al +</span><input id="tpPct" inputmode="decimal" autocomplete="off" placeholder="10" aria-label="Kâr al yüzdesi"><span>%</span></div>
+              <div class="inp"><span>Zarar durdur −</span><input id="slPct" inputmode="decimal" autocomplete="off" placeholder="5" aria-label="Zarar durdur yüzdesi"><span>%</span></div>
+              <div class="pos" id="exitHint"></div>
+            </div>
           </div>
           <div class="field">
             <div class="lblrow">
@@ -506,6 +526,7 @@ td.nt input{width:100%;font:inherit;border:1px solid var(--accent);border-radius
     <details open><summary>Hisse senedi nedir?</summary><p>Bir şirketin küçük bir ortaklık payıdır. Şirketin kârı ve geleceğine dair beklentiler değiştikçe fiyatı da değişir. Hisse aldığında şirketin işleri iyi giderse kazanır, kötü giderse kaybedersin.</p></details>
     <details><summary>BIST 100 endeksi</summary><p>Borsa İstanbul'daki en büyük 100 şirketin ortalama gidişatını gösterir. "Piyasa bugün düştü" denince genelde bu kastedilir. <b>Senin için ölçüt:</b> seçtiğin hisseler uzun vadede BIST 100'den daha iyi getiri sağlamıyorsa, tek tek hisse seçmek yerine endekse yatırmak daha mantıklı olabilir. Performans bölümü bunu gösterir.</p></details>
     <details><summary>Piyasa, limit ve stop emri</summary><p><b>Piyasa emri</b> o anki fiyattan hemen alır ya da satar. <b>Limit emri</b> fiyatı sen belirlersin: "250 ₺'ye düşerse al" ya da "300 ₺'ye çıkarsa sat". <b>Stop emri</b> çoğunlukla zararı sınırlamak için kullanılır: "240 ₺'nin altına düşerse sat". Önceden belirlenmiş bir stop, panikle karar vermeni önler.</p></details>
+    <details><summary>Çıkış planı ve iz süren stop</summary><p>Alırken <b>çıkış planı</b> eklersen iki satış emri birlikte kurulur: fiyat belirlediğin yüzde kadar yükselirse kârı alır, belirlediğin yüzde kadar düşerse zararı durdurur. Biri gerçekleşince diğeri kendiliğinden iptal olur. <b>İz süren stop</b> ise fiyat yükseldikçe tetik seviyesini de yukarı taşır; fiyat gördüğü en yüksek seviyeden belirlediğin yüzde kadar düşünce satar. Böylece yükselişte kalırsın, dönüşte kârın büyük kısmını korursun.</p></details>
     <details><summary>Komisyon</summary><p>Aracı kurumların her işlemden aldığı ücrettir; burada %0,1. Tek işlemde küçük görünür ama sık al-sat yapınca birikir ve getirini yer. İşlem geçmişinde toplam ödediğin komisyonu görebilirsin.</p></details>
     <details><summary>Hacim</summary><p>O gün el değiştiren hisse sayısıdır. Yüksek hacimli bir yükseliş genelde daha güçlü bir ilgiyi, düşük hacimli bir hareket ise zayıf bir ilgiyi gösterir. Hacmi çok düşük hisselerde istediğin fiyattan alıp satmak zorlaşabilir.</p></details>
     <details><summary>Gün aralığı ve 52 haftalık aralık</summary><p>Gün aralığı, fiyatın bugün gördüğü en düşük ve en yüksek seviyedir. 52 haftalık aralık ise son bir yılınkidir. Fiyatın bu aralığın neresinde olduğu, hissenin yakın geçmişine göre pahalı mı ucuz mu göründüğüne dair kaba bir fikir verir. Ama bir yılın dibinde olan hisse daha da düşebilir.</p></details>
@@ -872,7 +893,7 @@ function closeSheet(){document.body.classList.remove('sheet');hovering=false}
 $('back').addEventListener('click',()=>{if(history.state&&history.state.sheet)history.back();else closeSheet()});
 window.addEventListener('popstate',()=>closeSheet());
 function select(s,scroll){
-  S.sel=s; renderList(false); renderDetail(); $('qty').value=''; $('opr').value=otype!=='mkt'&&A(s)?String(+nat(s).toPrecision(6)).replace('.',','):''; updateEst(); save();
+  S.sel=s; renderList(false); renderDetail(); $('qty').value=''; $('opr').value=otype==='trl'?'5':otype!=='mkt'&&A(s)?String(+nat(s).toPrecision(6)).replace('.',','):''; updateEst(); save();
   if(scroll)openSheet();
 }
 let range=5, chartPts=[], chartRsi=null, hovering=false;
@@ -1043,7 +1064,7 @@ function parseNum(v){v=(v||'').replace(/\s/g,'');if(v.includes(',')&&v.includes(
 function roundQ(s,q){return isDec(s)?Math.floor(q*1e6)/1e6:Math.floor(q+1e-9)}
 const fx=s=>A(s)&&A(s).cur==='USD'?usd():1;
 function calcOrder(){
-  const s=S.sel, px=parseNum($('opr').value), p=otype==='mkt'?tlPrice(s):px*fx(s), raw=parseNum($('qty').value);
+  const s=S.sel, px=parseNum($('opr').value), p=otype==='mkt'||otype==='trl'?tlPrice(s):px*fx(s), raw=parseNum($('qty').value);
   let q=mode==='q'?raw:(side==='buy'?raw/(p*(1+FEE)):raw/p);
   q=roundQ(s,q);
   const gross=q*p, fee=gross*FEE;
@@ -1062,26 +1083,40 @@ function updateEst(){
     if(side==='buy'&&o.total>S.cash+1e-6)err='Nakit yetersiz. En fazla '+fmtQty(o.s,maxBuy(o.s))+' alabilirsin.';
     if(side==='sell'&&(!h||o.q>h.q+1e-9))err=h?'Elinde yalnızca '+fmtQty(o.s,h.q)+' var.':'Bu varlıktan elinde yok.';
   } else if($('qty').value.trim()&&mode==='a'&&!isDec(o.s)&&o.p)err='Bu tutar 1 adet almaya yetmiyor.';
-  if(otype!=='mkt'&&!(o.px>0))err=err||($('qty').value.trim()?'Tetik fiyatını gir.':'');
+  if(otype==='trl'&&side==='buy')err='İz süren stop yalnızca satışta kullanılır.';
+  else if(otype==='trl'&&o.px>0&&!(o.px>=0.5&&o.px<=50))err='Düşüş yüzdesi 0,5 ile 50 arasında olmalı.';
+  if(otype!=='mkt'&&!(o.px>0))err=err||($('qty').value.trim()?(otype==='trl'?'Düşüş yüzdesini gir.':'Tetik fiyatını gir.'):'');
+  if(!err&&side==='buy'&&$('exitOn').checked&&(otype==='mkt'||otype==='lmt')){const e=exitVals();if(!(e.tp>0||e.sl>0)&&$('qty').value.trim())err='Çıkış planı için kâr al ya da zarar durdur yüzdesi gir.'}
   $('err').textContent=err;
   const go=$('go'); go.disabled=!(o.q>0)||!!err||(otype!=='mkt'&&!(o.px>0));
   go.className='go'+(side==='sell'?' sell':'');
-  go.textContent=otype==='mkt'?o.s+(side==='buy'?' al':' sat'):(otype==='lmt'?'Limit ':'Stop ')+(side==='buy'?'alış':'satış')+' emri ver';
+  go.textContent=otype==='mkt'?o.s+(side==='buy'?' al':' sat'):otype==='trl'?'İz süren stop emri ver':(otype==='lmt'?'Limit ':'Stop ')+(side==='buy'?'alış':'satış')+' emri ver';
 }
 $('qty').addEventListener('input',updateEst);
 $('opr').addEventListener('input',updateEst);
+['tpPct','slPct'].forEach(id=>$(id).addEventListener('input',updateEst));
+$('exitOn').addEventListener('change',()=>{if($('exitOn').checked&&!$('tpPct').value&&!$('slPct').value){$('tpPct').value='10';$('slPct').value='5'}updateEst()});
 const OTXT={
   'lmt-buy':'Fiyat bu seviyeye ya da altına düşünce alır.',
   'lmt-sell':'Fiyat bu seviyeye ya da üstüne çıkınca satar (kâr al).',
   'stp-buy':'Fiyat bu seviyeye ya da üstüne çıkınca alır.',
-  'stp-sell':'Fiyat bu seviyeye ya da altına düşünce satar (zarar durdur).'};
+  'stp-sell':'Fiyat bu seviyeye ya da altına düşünce satar (zarar durdur).',
+  'trl-sell':'Fiyat yükseldikçe tetik seviyesi de yükselir. Fiyat gördüğü en yüksek seviyeden bu yüzde kadar düşünce satar.',
+  'trl-buy':'İz süren stop yalnızca satışta kullanılır. Yukarıdan Sat\'ı seç.'};
 function renderOHint(){
-  const on=otype!=='mkt'; $('oprBox').hidden=!on; $('oHint').hidden=!on;
-  if(on&&A(S.sel)){$('oHint').textContent=OTXT[otype+'-'+side]+' Şu anki fiyat: '+fmtNative(S.sel,nat(S.sel))+'.';$('oprUnit').textContent=A(S.sel).cur==='USD'?'$':'₺'}
+  const on=otype!=='mkt', tr=otype==='trl'; $('oprBox').hidden=!on||(tr&&side==='buy'); $('oHint').hidden=!on;
+  if(on&&A(S.sel)){$('oHint').textContent=OTXT[otype+'-'+side]+(tr&&side==='buy'?'':' Şu anki fiyat: '+fmtNative(S.sel,nat(S.sel))+'.');$('oprUnit').textContent=tr?'%':A(S.sel).cur==='USD'?'$':'₺';
+    $('opr').placeholder=tr?'Düşüş yüzdesi (ör. 5)':'Tetik fiyatı'; $('opr').setAttribute('aria-label',tr?'Düşüş yüzdesi':'Tetik fiyatı')}
+  // Çıkış planı: yalnızca piyasa ve limit alışta
+  const ex=side==='buy'&&(otype==='mkt'||otype==='lmt'); $('exitBox').hidden=!ex; $('exitFields').hidden=!ex||!$('exitOn').checked;
+  if(ex&&$('exitOn').checked&&A(S.sel)){
+    const base=otype==='lmt'&&parseNum($('opr').value)>0?parseNum($('opr').value):nat(S.sel), tp=parseNum($('tpPct').value), sl=parseNum($('slPct').value);
+    $('exitHint').textContent=(tp>0||sl>0)?'Alış gerçekleşince '+[tp>0?fmtNative(S.sel,base*(1+tp/100))+' kâr al':'',sl>0?fmtNative(S.sel,base*(1-sl/100))+' zarar durdur':''].filter(Boolean).join(' ve ')+' satış emri kurulur (yaklaşık; alış fiyatına göre). Biri gerçekleşince diğeri iptal olur.':'Kâr al ve/veya zarar durdur yüzdesini gir.';
+  }
 }
 $('otype').addEventListener('click',e=>{const b=e.target.closest('[data-o]');if(!b)return;otype=b.dataset.o;
   $('otype').querySelectorAll('[data-o]').forEach(x=>x.setAttribute('aria-pressed',x===b));
-  if(otype!=='mkt'&&!$('opr').value&&A(S.sel))$('opr').value=String(+nat(S.sel).toPrecision(6)).replace('.',',');
+  if(otype!=='mkt'&&A(S.sel))$('opr').value=otype==='trl'?'5':String(+nat(S.sel).toPrecision(6)).replace('.',',');
   renderDetail();updateEst()});
 function setSide(v){side=v;$('sideBuy').setAttribute('aria-pressed',v==='buy');$('sideSell').setAttribute('aria-pressed',v==='sell');updateEst()}
 $('sideBuy').addEventListener('click',()=>setSide('buy'));
@@ -1119,41 +1154,65 @@ function execTrade(s,sd,q,p,via,note){
   if(S.pv.length===0)S.pv.push({t:Date.now()-1,v:START_CASH,x:A('XU100')?A('XU100').p:null});
   return '';
 }
-const OTNAME={lmt:'Limit',stp:'Stop'};
-function triggered(o,v){return o.type==='lmt'?(o.side==='buy'?v<=o.px:v>=o.px):(o.side==='buy'?v>=o.px:v<=o.px)}
+const OTNAME={lmt:'Limit',stp:'Stop',trl:'İz süren stop'};
+const exitVals=()=>({tp:Math.max(0,parseNum($('tpPct').value)),sl:Math.min(99,Math.max(0,parseNum($('slPct').value)))});
+// Alış sonrası birbirine bağlı kâr al (limit) ve zarar durdur (stop) satış emirleri
+function placeExits(s,q,p,ex,note){
+  if(!ex||!(ex.tp>0||ex.sl>0))return 0;
+  const grp=Date.now()+''+Math.random().toString(36).slice(2,6), base={t:Date.now(),s,side:'sell',q,note:note||'',grp};
+  if(ex.tp>0)S.orders.unshift({...base,id:grp+'t',type:'lmt',px:+(p*(1+ex.tp/100)).toPrecision(6)});
+  if(ex.sl>0)S.orders.unshift({...base,id:grp+'s',type:'stp',px:+(p*(1-ex.sl/100)).toPrecision(6)});
+  return (ex.tp>0)+(ex.sl>0);
+}
+function triggered(o,v){if(o.type==='trl')return v<=o.px;return o.type==='lmt'?(o.side==='buy'?v<=o.px:v>=o.px):(o.side==='buy'?v>=o.px:v<=o.px)}
 // Bekleyen emirleri kontrol et: uygulama kapalıyken gelen fiyatlar (5 günlük seri) dahil
 function checkOrders(){
   if(!D||!S.orders.length)return;
-  const done=[];
+  const done=[], grpDone=new Set(); let moved=false;
   S.orders.forEach(o=>{
-    const a=A(o.s); if(!a)return;
+    const a=A(o.s); if(!a||(o.grp&&grpDone.has(o.grp)))return;
     let hit=null;
-    for(const [t,v] of a.h){if(t*1000>o.t&&triggered(o,v)){hit=o.px;break}}
-    if(hit==null&&(LIVE[o.s]||(isOpen(o.s)&&a.t*1000>o.t-60000))&&triggered(o,nat(o.s)))hit=nat(o.s);
+    const live=LIVE[o.s]||(isOpen(o.s)&&a.t*1000>o.t-60000);
+    if(o.type==='trl'){
+      // Zirveyi takip et; zirveden yüzde kadar düşünce tetiklenir
+      const pts=a.h.filter(([t])=>t*1000>o.t).map(x=>x[1]); if(live)pts.push(nat(o.s));
+      for(const v of pts){if(v>o.hi){o.hi=v;o.px=v*(1-o.pct);moved=true}if(v<=o.px){hit=o.px;break}}
+    } else {
+      for(const [t,v] of a.h){if(t*1000>o.t&&triggered(o,v)){hit=o.px;break}}
+      if(hit==null&&live&&triggered(o,nat(o.s)))hit=nat(o.s);
+    }
     if(hit==null)return;
     const err=execTrade(o.s,o.side,o.q,hit*fx(o.s),OTNAME[o.type],o.note);
-    done.push(o);
+    done.push(o); if(o.grp)grpDone.add(o.grp);
+    if(!err&&o.exit)placeExits(o.s,o.q,hit,o.exit,o.note);
     S.olog.unshift({...o,at:Date.now(),ok:!err,why:err,pn:hit});
     toast(err?`${OTNAME[o.type]} emri iptal: ${o.s} (${err})`:`${OTNAME[o.type]} emri gerçekleşti: ${fmtQty(o.s,o.q)} ${o.s} ${o.side==='buy'?'alındı':'satıldı'}`);
   });
+  S.orders.forEach(o=>{if(o.grp&&grpDone.has(o.grp)&&!done.includes(o)){done.push(o);S.olog.unshift({...o,at:Date.now(),ok:false,why:'eş'})}});
   if(done.length){S.orders=S.orders.filter(o=>!done.includes(o));S.olog=S.olog.slice(0,50);snapshot(true);save()}
+  else if(moved)save();
 }
 $('ticket').addEventListener('submit',e=>{
   e.preventDefault();
   if(!D)return;
   const o=calcOrder(); if(!(o.q>0))return;
   const s=o.s;
+  const ex=side==='buy'&&$('exitOn').checked?exitVals():null;
   if(otype!=='mkt'){
     if(!(o.px>0))return;
-    S.orders.unshift({id:Date.now()+''+Math.random().toString(36).slice(2,6),t:Date.now(),s,side,type:otype,q:o.q,px:o.px,note:$('note').value.trim()});
+    const ord={id:Date.now()+''+Math.random().toString(36).slice(2,6),t:Date.now(),s,side,type:otype,q:o.q,px:o.px,note:$('note').value.trim()};
+    if(otype==='trl'){ord.pct=o.px/100;ord.hi=nat(s);ord.px=nat(s)*(1-ord.pct)}
+    if(ex&&(ex.tp>0||ex.sl>0))ord.exit=ex;
+    S.orders.unshift(ord);
     $('note').value='';
-    toast(`${OTNAME[otype]} emri verildi: ${fmtQty(s,o.q)} ${s}, ${fmtNative(s,o.px)}`);
+    toast(otype==='trl'?`İz süren stop verildi: ${fmtQty(s,o.q)} ${s}, zirveden %${f2.format(o.px)} düşüşte satar (şu an ${fmtNative(s,ord.px)})`:`${OTNAME[otype]} emri verildi: ${fmtQty(s,o.q)} ${s}, ${fmtNative(s,o.px)}`+(ord.exit?' · çıkış planı alışla birlikte kurulacak':''));
     $('qty').value=''; save(); setTab('O'); if(mobile()){if(history.state&&history.state.sheet)history.back();closeSheet();setView('emirler')} renderAll(false); return;
   }
   const err=execTrade(s,side,o.q,o.p,'Piyasa',$('note').value.trim());
   if(err)return;
+  const nx=side==='buy'?placeExits(s,o.q,nat(s),ex,$('note').value.trim()):0;
   $('note').value='';
-  toast(side==='buy'?`${fmtQty(s,o.q)} ${s} alındı · ${tl(o.total)}`:`${fmtQty(s,o.q)} ${s} satıldı · K/Z ${signed(S.trades[0].pl,tl)}`);
+  toast(side==='buy'?`${fmtQty(s,o.q)} ${s} alındı · ${tl(o.total)}`+(nx?` · ${nx===2?'kâr al ve zarar durdur emirleri':'çıkış emri'} kuruldu`:''):`${fmtQty(s,o.q)} ${s} satıldı · K/Z ${signed(S.trades[0].pl,tl)}`);
   $('qty').value=''; snapshot(true); save(); applyFilter(); renderAll(false);
 });
 
@@ -1170,10 +1229,11 @@ function renderOrders(){
   if(!S.orders.length)html+=`<div class="empty">Bekleyen emrin yok. Emir fişinden <b>Limit</b> ya da <b>Stop</b> seçerek fiyat bir seviyeye gelince otomatik alıp satan emirler verebilirsin.</div>`;
   else html+=`<div class="tblwrap"><table><thead><tr><th>Verildiği an</th><th>Emir</th><th>Varlık</th><th>Miktar</th><th>Tetik fiyatı</th><th>Şu anki fiyat</th><th>Uzaklık</th><th></th></tr></thead><tbody>${
     S.orders.map(o=>{const cur=A(o.s)?nat(o.s):null, dist=cur?o.px/cur-1:0;
-      return `<tr><td class="t">${fdt(o.t)}</td><td><span class="badge ${o.side}">${OTNAME[o.type].toLocaleUpperCase('tr-TR')} ${o.side==='buy'?'ALIŞ':'SATIŞ'}</span></td><td><b>${o.s}</b></td><td>${fmtQty(o.s,o.q)}</td><td>${A(o.s)?fmtNative(o.s,o.px):o.px}</td><td>${cur!=null?fmtNative(o.s,cur):'–'}</td><td>${pct(dist)}</td><td><button class="xbtn" type="button" data-cancel="${o.id}">İptal et</button></td></tr>`}).join('')
+      const extra=o.type==='trl'?` <span class="muted">(zirve ${A(o.s)?fmtNative(o.s,o.hi):o.hi} − %${f2.format(o.pct*100)})</span>`:o.grp?` <span class="muted">(${o.type==='lmt'?'kâr al':'zarar durdur'})</span>`:o.exit?` <span class="muted">(+ çıkış planı)</span>`:'';
+      return `<tr><td class="t">${fdt(o.t)}</td><td><span class="badge ${o.side}">${OTNAME[o.type].toLocaleUpperCase('tr-TR')} ${o.side==='buy'?'ALIŞ':'SATIŞ'}</span></td><td><b>${o.s}</b></td><td>${fmtQty(o.s,o.q)}</td><td>${A(o.s)?fmtNative(o.s,o.px):o.px}${extra}</td><td>${cur!=null?fmtNative(o.s,cur):'–'}</td><td>${pct(dist)}</td><td><button class="xbtn" type="button" data-cancel="${o.id}">İptal et</button></td></tr>`}).join('')
   }</tbody></table></div>`;
   if(S.olog.length)html+=`<div class="sect">Sonuçlanan emirler</div><div class="tblwrap"><table><thead><tr><th>Sonuç zamanı</th><th>Emir</th><th>Varlık</th><th>Miktar</th><th>Tetik fiyatı</th><th>Durum</th></tr></thead><tbody>${
-    S.olog.slice(0,20).map(o=>`<tr><td class="t">${fdt(o.at)}</td><td><span class="badge ${o.side}">${OTNAME[o.type].toLocaleUpperCase('tr-TR')} ${o.side==='buy'?'ALIŞ':'SATIŞ'}</span></td><td><b>${o.s}</b></td><td>${fmtQty(o.s,o.q)}</td><td>${A(o.s)?fmtNative(o.s,o.px):o.px}</td><td class="st ${o.ok?'up':o.why==='iptal'?'muted':'down'}">${o.ok?'Gerçekleşti':o.why==='iptal'?'Sen iptal ettin':'İptal: '+o.why}</td></tr>`).join('')
+    S.olog.slice(0,20).map(o=>`<tr><td class="t">${fdt(o.at)}</td><td><span class="badge ${o.side}">${OTNAME[o.type].toLocaleUpperCase('tr-TR')} ${o.side==='buy'?'ALIŞ':'SATIŞ'}</span></td><td><b>${o.s}</b></td><td>${fmtQty(o.s,o.q)}</td><td>${A(o.s)?fmtNative(o.s,o.px):o.px}</td><td class="st ${o.ok?'up':o.why==='iptal'||o.why==='eş'?'muted':'down'}">${o.ok?'Gerçekleşti':o.why==='iptal'?'Sen iptal ettin':o.why==='eş'?'Diğer çıkış emri gerçekleşti':'İptal: '+o.why}</td></tr>`).join('')
   }</tbody></table></div>`;
   html+=`<div class="sect">Fiyat alarmları</div>`+(S.alerts.length?`<div class="tblwrap"><table><thead><tr><th>Varlık</th><th>Koşul</th><th>Şu anki fiyat</th><th>Uzaklık</th><th></th></tr></thead><tbody>${
     S.alerts.map(x=>{const cur=A(x.s)?nat(x.s):null;return `<tr><td class="t"><b>${x.s}</b></td><td class="t">${A(x.s)?fmtNative(x.s,x.px):x.px} ${x.dir==='below'?'altına düşerse':'üstüne çıkarsa'}</td><td>${cur!=null?fmtNative(x.s,cur):'–'}</td><td>${cur?pct(x.px/cur-1):'–'}</td><td><button class="xbtn" type="button" data-delal="${x.id}">Sil</button></td></tr>`}).join('')
@@ -1186,7 +1246,50 @@ function renderOrders(){
 $('paneO').addEventListener('click',e=>{const d=e.target.closest('[data-delal]');if(d){S.alerts=S.alerts.filter(x=>x.id!==d.dataset.delal);save();renderAll(false);toast('Alarm silindi.');return}
   const b=e.target.closest('[data-cancel]');if(!b)return;
   const o=S.orders.find(x=>x.id===b.dataset.cancel);if(!o)return;
-  S.orders=S.orders.filter(x=>x!==o);S.olog.unshift({...o,at:Date.now(),ok:false,why:'iptal'});save();renderAll(false);toast('Emir iptal edildi.')});
+  S.orders=S.orders.filter(x=>x!==o);S.olog.unshift({...o,at:Date.now(),ok:false,why:'iptal'});save();renderAll(false);toast(o.grp&&S.orders.some(x=>x.grp===o.grp)?'Emir iptal edildi. Bağlı diğer çıkış emri bekliyor.':'Emir iptal edildi.')});
+// Portföy değerinin zirveden en büyük düşüşü
+function drawdown(){
+  const pts=S.pv.concat([{t:Date.now(),v:total()}]); let peak=pts[0], r={mdd:0,pt:0,tt:0};
+  pts.forEach(p=>{if(p.v>peak.v)peak=p;const d=p.v/peak.v-1;if(d<r.mdd)r={mdd:d,pt:peak.t,tt:p.t}});
+  return r;
+}
+// Haftalar pazartesi 00:00'da başlar (cihaz saatine göre)
+function weekStart(t){const d=new Date(t);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime()}
+// Belirli bir andaki portföy değeri ve BIST 100 (o andan önceki son kayıt)
+function pvAt(t){let r=null;for(const p of S.pv){if(p.t<=t)r=p;else break}return r}
+function weekStats(ws,we){
+  const st=pvAt(ws)||(S.pv[0]&&S.pv[0].t<we?{t:S.pv[0].t,v:START_CASH,x:S.pv[0].x}:null); if(!st)return null;
+  const now=we>Date.now(), en=now?{v:total(),x:A('XU100')?A('XU100').p:null}:pvAt(we); if(!en)return null;
+  const tr=S.trades.filter(t=>t.t>=ws&&t.t<we);
+  return {r:en.v/st.v-1,v0:st.v,v1:en.v,x:st.x&&en.x?en.x/st.x-1:null,n:tr.length,real:tr.filter(t=>t.side==='sell').reduce((x,t)=>x+t.pl,0)};
+}
+function weekCard(){
+  const ws=weekStart(Date.now()), w=weekStats(ws,ws+7*864e5); if(!w)return '';
+  // Pozisyonların bu haftaki değişimi (5 günlük seriden)
+  const moves=Object.keys(S.hold).filter(A).map(s=>{const p0=(A(s).h.find(x=>x[0]*1000>=ws)||[])[1];return p0?[s,nat(s)/p0-1]:null}).filter(Boolean).sort((a,b)=>b[1]-a[1]);
+  const pw=weekStats(ws-7*864e5,ws);
+  let txt=`Bu hafta portföyün <b class="${cls(w.r)}">${pct(w.r)}</b> (${signed(w.v1-w.v0,tl)})`+(w.x!=null?`, BIST 100 <b class="${cls(w.x)}">${pct(w.x)}</b>. ${w.r>=w.x?'Endeksin önündesin.':'Endeksin gerisindesin.'}`:'.');
+  if(moves.length)txt+=` ${moves.length>1?'En iyi pozisyonun':'Pozisyonun'} <b>${moves[0][0]}</b> ${pct(moves[0][1])}`+(moves.length>1?`, en zayıfı <b>${moves[moves.length-1][0]}</b> ${pct(moves[moves.length-1][1])}.`:'.');
+  const sub=`${w.n} işlem`+(w.real?` · gerçekleşen K/Z ${signed(w.real,tl)}`:'')+(pw?` · geçen hafta ${pct(pw.r)}`+(pw.x!=null?` (BIST 100 ${pct(pw.x)})`:''):'');
+  return `<div class="week"><h4>Bu haftanın özeti</h4><p>${txt}</p><div class="muted">${sub}</div></div>`;
+}
+function weekTable(){
+  const first=weekStart(S.pv[0].t), rows=[];
+  for(let ws=weekStart(Date.now());ws>=first&&rows.length<8;ws-=7*864e5){const w=weekStats(ws,ws+7*864e5);if(w)rows.push([ws,w])}
+  if(rows.length<2)return '';
+  return `<div class="sect">Haftalık getiri</div><div class="tblwrap"><table><thead><tr><th>Hafta</th><th>Getirin</th><th>BIST 100</th><th>Fark</th><th>İşlem</th></tr></thead><tbody>${
+    rows.map(([ws,w])=>`<tr><td class="t">${new Date(ws).toLocaleDateString('tr-TR',{day:'numeric',month:'short'})} haftası</td><td class="${cls(w.r)}">${pct(w.r)}</td><td class="${w.x!=null?cls(w.x):'muted'}">${w.x!=null?pct(w.x):'–'}</td><td class="${w.x!=null?cls(w.r-w.x):'muted'}">${w.x!=null?signed((w.r-w.x)*100,x=>f2.format(x))+' puan':'–'}</td><td>${w.n}</td></tr>`).join('')
+  }</tbody></table></div>`;
+}
+// Yeni hafta başladığında geçen haftanın karnesi
+function weeklyNotice(){
+  if(!D||!S.pv.length)return;
+  const ws=weekStart(Date.now()); if(S.lastWeek===ws)return;
+  const first=!S.lastWeek; S.lastWeek=ws; save(); if(first)return;
+  const w=weekStats(ws-7*864e5,ws); if(!w)return;
+  const msg=`Geçen hafta portföyün ${pct(w.r)}`+(w.x!=null?`, BIST 100 ${pct(w.x)}. ${w.r>=w.x?'Endeksi geçtin.':'Endeksin gerisinde kaldın.'}`:'.');
+  toast('📊 '+msg); notify('Haftalık karne',msg);
+}
 function renderPerf(){
   $('tabNote').textContent='';
   if(!S.trades.length){$('paneP').innerHTML=`<div class="empty">İlk işlemini yaptığında getirin, BIST 100 ile karşılaştırman ve aylık sonuçların burada görünecek.</div>`;return}
@@ -1196,17 +1299,22 @@ function renderPerf(){
   const fees=S.trades.reduce((x,t)=>x+t.fee,0);
   const days=Math.max(1,Math.round((Date.now()-S.pv[0].t)/864e5));
   const K=(l,v,sub)=>`<div class="k"><div class="lbl">${l}</div><div class="val">${v}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;
-  let html='<div class="perf">'+
+  const dd=drawdown(), wl=sells.filter(t=>t.pl>0), ll=sells.filter(t=>t.pl<0);
+  const avgW=wl.length?wl.reduce((x,t)=>x+t.pl,0)/wl.length:0, avgL=ll.length?ll.reduce((x,t)=>x+t.pl,0)/ll.length:0;
+  let html=weekCard()+'<div class="perf">'+
     K('Toplam getirin',`<span class="${cls(ret)}">${pct(ret)}</span>`,`${signed(T-START_CASH,tl)} · ${days} gün`)+
     (bm?K('Aynı dönemde BIST 100',`<span class="${cls(bm.ret)}">${pct(bm.ret)}</span>`,`${dmhm(bm.t0)} itibarıyla`)+
         K('Endekse göre',`<span class="${cls(T/bm.v0-1-bm.ret)}">${signed((T/bm.v0-1-bm.ret)*100,x=>f2.format(x))} puan</span>`,(T/bm.v0-1)>=bm.ret?'Endeksi geçiyorsun':'Endeksin gerisindesin'):'')+
     K('Kârlı satış oranı',sells.length?f0.format(wins/sells.length*100)+'%':'–',`${sells.length} satıştan ${wins} kârlı`)+
     K('En iyi satış',best?`<span class="${cls(best.pl)}">${signed(best.pl,tl)}</span>`:'–',best?best.s+' · '+fdt(best.t):'Henüz satış yok')+
     K('En kötü satış',worst?`<span class="${cls(worst.pl)}">${signed(worst.pl,tl)}</span>`:'–',worst?worst.s+' · '+fdt(worst.t):'Henüz satış yok')+
+    K('En büyük düşüş',dd.mdd<0?`<span class="down">${pct(dd.mdd)}</span>`:'–',dd.mdd<0?`${dmhm(dd.pt)} zirvesinden ${dmhm(dd.tt)} dibine`:'Portföyün henüz zirvesinden düşmedi')+
+    K('Ortalama kazanç / kayıp',sells.length?`<span class="up">${wl.length?signed(avgW,tl):'–'}</span> / <span class="down">${ll.length?signed(avgL,tl):'–'}</span>`:'–',wl.length&&ll.length?`Kazançların kayıplarının ${f2.format(avgW/-avgL)} katı`+(avgW<-avgL?': kayıpları erken kesmeyi dene':''):'Kazanan ve kaybeden satışların ortalaması')+
     K('Ödenen komisyon',tl(fees),S.trades.length+' işlem')+'</div>';
   // Aylık getiri: her ayın ilk ve son portföy değeri
   const months={}; S.pv.concat([{t:Date.now(),v:T}]).forEach(p=>{const d=new Date(p.t),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');(months[k]=months[k]||[]).push(p.v)});
   const keys=Object.keys(months).sort(); let prevEnd=START_CASH;
+  html+=weekTable();
   html+=`<div class="sect">Aylık getiri</div><div class="tblwrap"><table><thead><tr><th>Ay</th><th>Ay başı</th><th>Ay sonu / şimdi</th><th>Getiri</th></tr></thead><tbody>${
     keys.map(k=>{const arr=months[k],st=prevEnd,en=arr[arr.length-1],r=en/st-1;prevEnd=en;const [y,m]=k.split('-');
       return `<tr><td class="t">${new Date(+y,+m-1,1).toLocaleDateString('tr-TR',{month:'long',year:'numeric'})}</td><td>${tl(st)}</td><td>${tl(en)}</td><td class="${cls(r)}">${pct(r)}</td></tr>`}).reverse().join('')
@@ -1371,7 +1479,7 @@ function renderAll(flash){
   for(const s in S.hold)if(A(s))S.hold[s].last=tlPrice(s);
   renderMarkets();renderSummary();renderList(flash);renderDetail();updateEst();renderBottom();
 }
-function onData(){ if(D){buildList();checkOrders();checkAlerts();snapshot(false)} renderAll(true) }
+function onData(){ if(D){buildList();checkOrders();checkAlerts();snapshot(false);weeklyNotice()} renderAll(true) }
 $('retry').addEventListener('click',()=>{loadData().then(loadCrypto)});
 window.addEventListener('resize',()=>{renderSummary();renderDetail()});
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>renderAll(false));

@@ -8,7 +8,7 @@ Adres: https://palando07.github.io/sanal-borsa/
 
 - 100.000 ₺ sanal başlangıç parası, %0,1 komisyon
 - BIST 100'deki şirketler, 47 ABD hissesi, 8 endeks fonu (S&P 500, Nasdaq 100, Türkiye, altın, tahvil…), 21 kripto para, dolar, euro, sterlin, frank, gram/ons altın ve gümüş, Brent petrol; üstte BIST 100 endeksi
-- Adet veya TL tutarıyla alış/satış; piyasa, limit ve stop (zarar durdur) emirleri
+- Adet veya TL tutarıyla alış/satış; piyasa, limit ve stop (zarar durdur) emirleri; iz süren stop; alışla birlikte kâr al ve zarar durdur (biri gerçekleşince diğeri iptal)
 - İzleme listesi (☆) ve fiyat alarmları (uygulama açıkken bildirim)
 - Grafikte 1 gün, 5 gün, 3 ay, 1 yıl, 5 yıl; uzun aralıklarda 20/50/200 günlük hareketli ortalama ve RSI (14) ile kısa yorum
 - "Ya o zaman alsaydım?": geçmişte yatırılan bir tutarın bugünkü değeri, aynı dönemde BIST 100, gram altın ve dolarla karşılaştırmalı
@@ -18,7 +18,7 @@ Adres: https://palando07.github.io/sanal-borsa/
 - Portföy yedeği alma ve geri yükleme (JSON dosyası)
 - Haberler: Google Haberler'den piyasa gündemi, portföydeki varlıkların ve her hissenin son haberleri (yarım saatte bir)
 - Yatırım günlüğü: her işleme "neden" notu; Performans sekmesinde alış ve satış gerekçeleri sonuçla yan yana
-- Portföyü BIST 100 ile karşılaştıran grafik, performans sekmesi ve aylık getiri
+- Portföyü BIST 100 ile karşılaştıran grafik, performans sekmesi ve aylık getiri; haftalık özet ve haftalık getiri tablosu, en büyük düşüş, ortalama kazanç/kayıp; yeni haftada geçen haftanın karnesi
 - Portföy değeri grafiği, pozisyon bazında kâr/zarar, gerçekleşen K/Z ve işlem geçmişi
 - Portföy yalnızca kullanılan cihazda (tarayıcıda) saklanır
 
