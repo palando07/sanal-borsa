@@ -11,6 +11,7 @@ Adres: https://palando07.github.io/sanal-borsa/
 - Adet veya TL tutarıyla alış/satış; piyasa, limit ve stop (zarar durdur) emirleri; iz süren stop; alışla birlikte kâr al ve zarar durdur (biri gerçekleşince diğeri iptal)
 - İzleme listesi (☆) ve fiyat alarmları (uygulama açıkken bildirim)
 - Grafikte 1 gün, 5 gün, 3 ay, 1 yıl, 5 yıl; uzun aralıklarda 20/50/200 günlük hareketli ortalama ve RSI (14) ile kısa yorum
+- Strateji testi: RSI 30/70, 50 günlük ortalama, altın kesişim ve "düşüşte al" kurallarının 1/3/5 yıllık sonucu; al-tut ve BIST 100 ile kıyas, işlem listesi
 - "Ya o zaman alsaydım?": geçmişte yatırılan bir tutarın bugünkü değeri, aynı dönemde BIST 100, gram altın ve dolarla karşılaştırmalı
 - Portföy dağılımı (varlık türü, sektör) ve risk uyarıları (tek varlık, sektör, kripto yoğunluğu)
 - Hisse bilgi kartı: önceki kapanış, gün ve 52 haftalık aralık, hacim

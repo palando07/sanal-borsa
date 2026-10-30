@@ -259,6 +259,12 @@ tbody tr.click:hover{background:var(--sunk)}
 .wicmp .bar i.up{background:var(--up)} .wicmp .bar i.down{background:var(--down)}
 .wicmp .v{font-family:var(--font-num);text-align:right;white-space:nowrap}
 .wicmp .me{font-weight:600}
+.bt select{flex:1 1 100%;min-width:0}
+#btChart{height:140px;width:100%;display:block}
+.btleg{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.btleg i{display:inline-block;width:14px;height:0;border-top:2px solid var(--c);vertical-align:middle;margin-right:5px}
+.btleg i.d{border-top-style:dashed}
+.bt table{font-size:12px} .bt th,.bt td{padding:6px 8px}
 .dist{padding:12px 14px;display:grid;gap:14px;border-bottom:1px solid var(--line)}
 .sbar{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;background:var(--sunk);margin-top:8px}
 .sbar i{display:block;height:100%;min-width:3px}
@@ -490,6 +496,22 @@ td.nt input{width:100%;font:inherit;border:1px solid var(--accent);border-radius
           </div>
           <div id="wiRes" class="muted">Geçmiş fiyatlar yükleniyor…</div>
         </section>
+        <section class="whatif bt" aria-label="Strateji testi">
+          <h4>Strateji testi</h4>
+          <div class="muted" style="font-size:12px">Bir al-sat kuralı geçmişte bu varlıkta uygulansaydı ne olurdu?</div>
+          <div class="wirow">
+            <select class="sel" id="btStrat" aria-label="Kural">
+              <option value="rsi">RSI 30'un altına inince al, 70'i geçince sat</option>
+              <option value="ma50">Fiyat 50 günlük ortalamanın üstündeyken tut</option>
+              <option value="cross">Altın kesişim: Ort. 50, Ort. 200'ün üstündeyken tut</option>
+              <option value="dip">%20 düşüşte al, %20 kârda ya da %10 zararda sat</option>
+            </select>
+            <div class="seg" role="group" aria-label="Dönem" id="btPer"><button type="button" data-y="1" aria-pressed="false">1 yıl</button><button type="button" data-y="3" aria-pressed="false">3 yıl</button><button type="button" data-y="5" aria-pressed="true">5 yıl</button></div>
+          </div>
+          <canvas id="btChart" role="img" aria-label="Strateji ve al-tut karşılaştırma grafiği" hidden></canvas>
+          <div class="btleg" id="btLeg" hidden><span><i id="btSw" style="--c:var(--up)"></i>Kural</span><span><i class="d" style="--c:var(--accent)"></i>Hiç satmadan tutmak (al-tut)</span></div>
+          <div id="btRes" class="muted">Geçmiş fiyatlar yükleniyor…</div>
+        </section>
         <div class="dnews" id="dNews" hidden></div>
       </div>
     </section>
@@ -532,6 +554,7 @@ td.nt input{width:100%;font:inherit;border:1px solid var(--accent);border-radius
     <details><summary>Gün aralığı ve 52 haftalık aralık</summary><p>Gün aralığı, fiyatın bugün gördüğü en düşük ve en yüksek seviyedir. 52 haftalık aralık ise son bir yılınkidir. Fiyatın bu aralığın neresinde olduğu, hissenin yakın geçmişine göre pahalı mı ucuz mu göründüğüne dair kaba bir fikir verir. Ama bir yılın dibinde olan hisse daha da düşebilir.</p></details>
     <details><summary>Çeşitlendirme</summary><p>Tüm paranı tek bir hisseye yatırmak, o şirkette bir sorun çıkınca hepsini riske atmak demektir. Farklı sektörlere, farklı varlıklara (hisse, altın, döviz) dağılmak tek bir kötü haberin etkisini azaltır. Portföy bölümündeki dağılım çubukları ve risk uyarıları paranın nerede yoğunlaştığını gösterir.</p></details>
     <details><summary>Hareketli ortalama ve RSI</summary><p>Grafikte 3A, 1Y ya da 5Y seçince çıkar. <b>Hareketli ortalama</b> son 20, 50 ya da 200 günün ortalama fiyatıdır; fiyat bunun üstündeyse eğilim yukarı kabul edilir. <b>RSI</b> 0–100 arası bir değerdir: 70 üstü fiyatın kısa sürede çok yükseldiğini, 30 altı çok hızlı düştüğünü gösterir. İkisi de geçmişe bakar, geleceği tahmin etmez.</p></details>
+    <details><summary>Strateji testi</summary><p>Hisse sayfasında hazır bir al-sat kuralını seçip son 1, 3 ya da 5 yılda uygulansaydı ne olacağını görürsün. Asıl soru kuralın para kazandırıp kazandırmadığı değil, <b>hiçbir şey yapmadan tutmayı (al-tut) geçip geçmediğidir.</b> Çoğu basit kural uzun vadede al-tut'un gerisinde kalır; ama bazıları büyük düşüşleri azaltır. Sonuçlar geçmişe aittir.</p></details>
     <details><summary>"Ya o zaman alsaydım?"</summary><p>Bir varlığa geçmişte yatırım yapsaydın bugün ne olurdu, bunu BIST 100, gram altın ve dolarla aynı dönemde karşılaştırır. Bir hisse geçmişte çok kazandırmış olabilir ama asıl soru aynı dönemde altını ya da endeksi geçip geçmediğidir. Geçmiş getiri geleceğin garantisi değildir.</p></details>
     <details><summary>Haberler ve fiyat</summary><p>Fiyatlar çoğu zaman haber çıkmadan önce beklentiyle hareket eder. Haber çıktığında hareketin büyük kısmı çoktan olmuş olabilir. "Söylentide al, haberde sat" sözü bundandır. Haberi okuyup hemen işlem yapmak yerine yatırım günlüğüne not alıp sonucunu izlemek daha öğreticidir.</p></details>
     <details><summary>Kur etkisi: ABD hisseleri ve kripto</summary><p>ABD hisseleri ve kripto paralar dolar cinsindendir. TL karşılığı hem hissenin dolar fiyatından hem de dolar kurundan etkilenir. Hisse dolar bazında yerinde saysa bile kur yükselirse TL bazında kazanç görebilirsin.</p></details>
@@ -981,6 +1004,7 @@ function renderDetail(){
   $('dChg').innerHTML=`<span class="${cls(ch)}">${pct(ch)} ${a.c==='Kripto'?'24 saat':'bugün'}</span>`+(a.cur==='USD'?` <span class="muted">· ${tl(tlPrice(s))}</span>`:'');
   renderChart(s);
   renderWhatIf();
+  renderBacktest();
   $('dTopNote').textContent=isOpen(s)?'':'Piyasa kapalı';
   const h=S.hold[s];
   if(h){
@@ -1059,6 +1083,65 @@ function renderWhatIf(){
     `<div class="muted" style="font-size:12px;margin:8px 0 6px">Aynı parayla aynı gün şunları alsaydın:</div>`+
     `<div class="wicmp">${rows.map(x=>`<span class="${x===me?'me':''}">${x===me?esc(s):WI_NAME[x.c]||x.c}</span><span class="bar"><i class="${x.r>=0?'up':'down'}" style="width:${(Math.abs(x.r)/mx*100).toFixed(1)}%"></i></span><span class="v ${x===me?'me':''}">${tl(x.v)} <span class="${cls(x.r)}">${pct(x.r)}</span></span>`).join('')}</div>`+
     `<p class="muted" style="font-size:12px;margin:8px 0 0">${best===me?`Bu dönemde ${esc(s)} karşılaştırılanların en iyisi oldu.`:`Bu dönemde en çok ${WI_NAME[best.c]||best.c} kazandırdı.`}${A(s).cur==='USD'?' Dolar bazlı varlıkta kur değişimi de hesaba katıldı.':''} Temettü ve komisyon dahil değil. Geçmiş getiri geleceğin garantisi değildir.</p>`;
+}
+// ---- Strateji testi: günlük kapanışlarla, gün sonu fiyatından tam giriş/çıkış ----
+let btStrat='rsi', btYears=5, btCache={};
+$('btStrat').addEventListener('change',e=>{btStrat=e.target.value;renderBacktest()});
+$('btPer').addEventListener('click',e=>{const b=e.target.closest('[data-y]');if(!b)return;btYears=+b.dataset.y;b.parentNode.querySelectorAll('[data-y]').forEach(x=>x.setAttribute('aria-pressed',x===b));renderBacktest()});
+const BT_TXT={rsi:'RSI 30\'un altına inince alıp 70\'i geçince satmak',ma50:'fiyat 50 günlük ortalamanın üstündeyken tutmak',cross:'Ort. 50, Ort. 200\'ün üstündeyken tutmak',dip:'son zirvesinden %20 düşünce alıp %20 kârda ya da %10 zararda satmak'};
+function backtest(s,strat,years){
+  const all=dailyPts(s); if(!all)return all;
+  const usdH=A(s).cur==='USD'?hist('USD'):null; if(A(s).cur==='USD'&&!usdH)return usdH;
+  const n=all.length, c=all.map(x=>x[1]);
+  // TL fiyatı: dolar bazlı varlıkta o günün kuru (ileriye doldurulmuş)
+  let j=0,u=usdH?usdH.c[0]:1; const P=all.map((x,i)=>{if(!usdH)return x[1];if(i===n-1)return tlPrice(s);const d=x[0]/86400;while(j<usdH.d.length&&usdH.d[j]<=d){u=usdH.c[j];j++}return x[1]*u});
+  const k=Math.max(1,all.findIndex(x=>x[0]>=all[n-1][0]-years*365*86400));
+  const r=rsi(c), m50=sma(c,50), m200=sma(c,200);
+  let pos=false,cash=1,q=0,entry=null,peak=c[0];
+  const eq=[],trades=[];let inDays=0;
+  for(let i=0;i<n;i++){
+    if(c[i]>peak)peak=c[i];
+    if(i<k){continue}
+    let want=pos;
+    if(strat==='rsi'){if(!pos&&r[i]!=null&&r[i]<30)want=true;else if(pos&&r[i]>70)want=false}
+    else if(strat==='ma50'){if(m50[i]!=null)want=c[i]>m50[i]}
+    else if(strat==='cross'){if(m200[i]!=null)want=m50[i]>m200[i]}
+    else if(strat==='dip'){if(!pos&&c[i]<=peak*0.8)want=true;else if(pos&&(c[i]>=entry.c*1.2||c[i]<=entry.c*0.9))want=false}
+    if(want&&!pos){q=cash*(1-FEE)/P[i];cash=0;pos=true;entry={t:all[i][0],p:P[i],c:c[i],v:q*P[i]/(1-FEE)}}
+    else if(!want&&pos){cash=q*P[i]*(1-FEE);q=0;pos=false;trades.push({t0:entry.t,p0:entry.p,t1:all[i][0],p1:P[i],r:cash/entry.v-1});if(strat==='dip')peak=c[i]}
+    if(pos)inDays++;
+    eq.push(pos?q*P[i]:cash);
+  }
+  if(pos)trades.push({t0:entry.t,p0:entry.p,t1:null,p1:P[n-1],r:q*P[n-1]/entry.v-1});
+  const hold=P.slice(k).map(p=>p/P[k]*(1-FEE));
+  const mdd=v=>{let pk=v[0],m=0;v.forEach(x=>{if(x>pk)pk=x;m=Math.min(m,x/pk-1)});return m};
+  const xu=hist('XU100'); let xr=null;
+  if(xu&&s!=='XU100'){const i0=xu.d.findIndex(d=>d>=all[k][0]/86400);if(i0>=0&&A('XU100'))xr=A('XU100').p/xu.c[i0]-1}
+  return {eq,hold,t0:all[k][0],ret:eq[eq.length-1]-1,hret:hold[hold.length-1]-1,xr,trades,inPct:inDays/eq.length,mdd:mdd(eq),hmdd:mdd(hold),short:all[0][0]>all[n-1][0]-years*365*86400+20*86400};
+}
+function renderBacktest(){
+  const s=S.sel, box=$('btRes'); if(!D||!A(s))return;
+  const key=[s,btStrat,btYears,nat(s),'XU100' in HV,'USD' in HV].join('|');
+  const b=btCache.key===key?btCache.v:backtest(s,btStrat,btYears);
+  if(b)btCache={key,v:b};
+  $('btChart').hidden=!b; $('btLeg').hidden=!b;
+  if(b===undefined){box.className='muted';box.textContent='Geçmiş fiyatlar yükleniyor…';return}
+  if(!b){box.className='muted';box.textContent='Bu varlığın geçmiş fiyatları şu an alınamadı.';return}
+  const AMT=10000, closed=b.trades.filter(t=>t.t1), wins=closed.filter(t=>t.r>0).length;
+  drawChart($('btChart'),b.eq.map(v=>v*AMT),{extra:b.hold.map(v=>v*AMT),base:AMT,labels:shortTL});
+  $('btSw').style.setProperty('--c',b.ret>=0?'var(--up)':'var(--down)');
+  const beat=b.ret>b.hret, d=t=>dmy(t*1000);
+  box.className='';
+  box.innerHTML=(b.short?`<p class="muted" style="margin:0 0 6px;font-size:12px">${esc(s)} verisi ${d(b.t0)} tarihinden başlıyor; test o günden.</p>`:'')+
+    `<div class="wimain">${d(b.t0)} tarihinden bu yana ${BT_TXT[btStrat]}: <b>${tl(AMT)}</b> → <b class="${cls(b.ret)}">${tl(AMT*(1+b.ret))}</b> <span class="${cls(b.ret)}">(${pct(b.ret)})</span>.<br>Hiç satmadan tutsaydın: <b class="${cls(b.hret)}">${tl(AMT*(1+b.hret))}</b> <span class="${cls(b.hret)}">(${pct(b.hret)})</span>`+(b.xr!=null?`, BIST 100'de bekleseydin: <b class="${cls(b.xr)}">${tl(AMT*(1+b.xr))}</b> <span class="${cls(b.xr)}">(${pct(b.xr)})</span>`:'')+`.</div>`+
+    `<div class="wicmp" style="grid-template-columns:auto 1fr;margin-top:8px"><span class="muted">Sonuç</span><span class="${beat?'up':'down'}"><b>${beat?'Kural, al-tut\'u geçti.':'Kural, al-tut\'un gerisinde kaldı.'}</b></span>`+
+    `<span class="muted">İşlem</span><span>${closed.length} kapanan${b.trades.length>closed.length?' + 1 açık':''}${closed.length?` · ${f0.format(wins/closed.length*100)}% kârlı`:''}</span>`+
+    `<span class="muted">Piyasada kalma</span><span>Zamanın ${f0.format(b.inPct*100)}%</span>`+
+    `<span class="muted">En büyük düşüş</span><span><span class="down">${pct(b.mdd)}</span> <span class="muted">(al-tut ${pct(b.hmdd)})</span></span></div>`+
+    (b.trades.length?`<div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Alış</th><th>Satış</th><th>Getiri</th></tr></thead><tbody>${
+      b.trades.slice(-8).reverse().map(t=>`<tr><td class="t">${d(t.t0)} · ${tl(t.p0)}</td><td class="t">${t.t1?d(t.t1)+' · '+tl(t.p1):'Hâlâ açık · '+tl(t.p1)}</td><td class="${cls(t.r)}">${pct(t.r)}</td></tr>`).join('')
+    }</tbody></table></div>${b.trades.length>8?`<div class="muted" style="font-size:12px">Son 8 işlem gösteriliyor (toplam ${b.trades.length}).</div>`:''}`:`<p class="muted" style="margin:8px 0 0;font-size:12px">Bu dönemde kural hiç alım sinyali vermedi.</p>`)+
+    `<p class="muted" style="font-size:12px;margin:8px 0 0">İşlemler gün sonu kapanış fiyatından, %0,1 komisyonla hesaplandı; temettü dahil değil.${A(s).cur==='USD'?' TL karşılığı o günkü dolar kuruyla.':''} Geçmişte işe yarayan bir kural gelecekte yaramayabilir; çok kural deneyip en iyisini seçmek, şansı beceri sanmaya yol açar.</p>`;
 }
 function parseNum(v){v=(v||'').replace(/\s/g,'');if(v.includes(',')&&v.includes('.'))v=v.replace(/\./g,'');v=v.replace(',','.');const n=parseFloat(v);return isFinite(n)?n:0}
 function roundQ(s,q){return isDec(s)?Math.floor(q*1e6)/1e6:Math.floor(q+1e-9)}
