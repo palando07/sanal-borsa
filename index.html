@@ -239,7 +239,8 @@ tbody tr.click:hover{background:var(--sunk)}
 .inds button{border:1px solid var(--line);background:transparent;border-radius:999px;padding:3px 10px 3px 8px;font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
 .inds button i{width:12px;height:3px;border-radius:2px;background:var(--c)}
 .inds button[aria-pressed="true"]{color:var(--fg);border-color:var(--c);font-weight:600}
-#rsiChart{height:64px;width:100%;display:block}
+#rsiChart,#macdChart{height:64px;width:100%;display:block}
+#volChart{height:44px;width:100%;display:block}
 .indnote{font-size:13px;display:grid;gap:3px}
 .indnote .muted{font-size:12px}
 .indhelp{font-size:12px;color:var(--muted)}
@@ -421,10 +422,12 @@ td.nt input{width:100%;font:inherit;border:1px solid var(--accent);border-radius
         </div>
         <div class="chartwrap" id="chartWrap"><canvas id="assetChart" role="img" aria-label="Fiyat grafiği"></canvas><div class="cross" id="cross" hidden></div></div>
         <div class="ptime"><div class="ranges" role="group" aria-label="Grafik aralığı"><button type="button" data-r="1" aria-pressed="false">1G</button><button type="button" data-r="5" aria-pressed="true">5G</button><button type="button" data-r="90" aria-pressed="false">3A</button><button type="button" data-r="365" aria-pressed="false">1Y</button><button type="button" data-r="1825" aria-pressed="false">5Y</button></div><span id="dTime"></span></div>
-        <div class="inds" id="inds" hidden role="group" aria-label="Göstergeler"><button type="button" data-i="ma20" style="--c:#3B82F6"><i></i>Ort. 20</button><button type="button" data-i="ma50" style="--c:#F59E0B"><i></i>Ort. 50</button><button type="button" data-i="ma200" style="--c:#A855F7"><i></i>Ort. 200</button><button type="button" data-i="rsi" style="--c:var(--accent)"><i></i>RSI</button></div>
+        <div class="inds" id="inds" hidden role="group" aria-label="Göstergeler"><button type="button" data-i="ma20" style="--c:#3B82F6"><i></i>Ort. 20</button><button type="button" data-i="ma50" style="--c:#F59E0B"><i></i>Ort. 50</button><button type="button" data-i="ma200" style="--c:#A855F7"><i></i>Ort. 200</button><button type="button" data-i="bb" style="--c:#94A3B8"><i></i>Bollinger</button><button type="button" data-i="vol" style="--c:#64748B"><i></i>Hacim</button><button type="button" data-i="rsi" style="--c:var(--accent)"><i></i>RSI</button><button type="button" data-i="macd" style="--c:#14B8A6"><i></i>MACD</button></div>
+        <canvas id="volChart" hidden role="img" aria-label="Hacim grafiği"></canvas>
         <canvas id="rsiChart" hidden role="img" aria-label="RSI göstergesi"></canvas>
+        <canvas id="macdChart" hidden role="img" aria-label="MACD göstergesi"></canvas>
         <div class="indnote" id="indNote" hidden></div>
-        <details class="indhelp" id="indHelp" hidden><summary>Bu çizgiler ne anlama geliyor?</summary><p><b>Hareketli ortalama (Ort. 20 / 50 / 200):</b> son 20, 50 ya da 200 işlem gününün ortalama kapanış fiyatı. Fiyat ortalamanın üstündeyse eğilim yukarı, altındaysa aşağı kabul edilir. Kısa ortalamanın uzun ortalamayı yukarı kesmesine "altın kesişim", aşağı kesmesine "ölüm kesişimi" denir.</p><p><b>RSI (14 gün):</b> son 14 günün yükselişlerini düşüşleriyle kıyaslar, 0 ile 100 arasında bir değer verir. 70 üstü "aşırı alım" (fiyat kısa sürede çok yükseldi, soluklanabilir), 30 altı "aşırı satım" (çok hızlı düştü, tepki gelebilir) diye yorumlanır.</p><p>Bu göstergeler geçmiş fiyatlardan hesaplanır, geleceği bilmez. Güçlü yükselişlerde RSI haftalarca 70 üstünde kalabilir. Tek başına al-sat sinyali olarak değil, fiyatın nerede durduğunu anlamak için kullan.</p></details>
+        <details class="indhelp" id="indHelp" hidden><summary>Bu çizgiler ne anlama geliyor?</summary><p><b>Hareketli ortalama (Ort. 20 / 50 / 200):</b> son 20, 50 ya da 200 işlem gününün ortalama kapanış fiyatı. Fiyat ortalamanın üstündeyse eğilim yukarı, altındaysa aşağı kabul edilir. Kısa ortalamanın uzun ortalamayı yukarı kesmesine "altın kesişim", aşağı kesmesine "ölüm kesişimi" denir.</p><p><b>RSI (14 gün):</b> son 14 günün yükselişlerini düşüşleriyle kıyaslar, 0 ile 100 arasında bir değer verir. 70 üstü "aşırı alım" (fiyat kısa sürede çok yükseldi, soluklanabilir), 30 altı "aşırı satım" (çok hızlı düştü, tepki gelebilir) diye yorumlanır.</p><p>Bu göstergeler geçmiş fiyatlardan hesaplanır, geleceği bilmez. Güçlü yükselişlerde RSI haftalarca 70 üstünde kalabilir. Tek başına al-sat sinyali olarak değil, fiyatın nerede durduğunu anlamak için kullan.</p><p><b>Bollinger bantları:</b> 20 günlük ortalamanın iki standart sapma üstü ve altı. Fiyat zamanın çoğunu bantların içinde geçirir; banda değmesi hareketin aşırı hızlandığını, bantların daralması ise sert bir hareketin yaklaşıyor olabileceğini gösterir.</p><p><b>MACD:</b> 12 ve 26 günlük üssel ortalamaların farkı. MACD çizgisi sinyal çizgisini (9 günlük ortalaması) yukarı keserse ivme yukarı, aşağı keserse aşağı dönüyor diye yorumlanır. Sütunlar ikisi arasındaki farktır.</p><p><b>Hacim:</b> o gün el değiştiren adet. Yüksek hacimli hareketler daha güvenilir kabul edilir.</p></details>
         <div class="pos" id="dPos"></div>
         <div class="info" id="dInfo"></div>
         <div class="alform">
@@ -807,9 +810,9 @@ function drawChart(cv,vals,opt={}){
     g.stroke();g.setLineDash([]);
   }
   (opt.lines||[]).forEach(l=>{
-    g.strokeStyle=l.color;g.lineWidth=1.25;g.beginPath();let on=false;
+    g.strokeStyle=l.color;g.lineWidth=1.25;g.setLineDash(l.dash?[4,3]:[]);g.beginPath();let on=false;
     l.v.forEach((v,i)=>{if(v==null){on=false;return}on?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));on=true});
-    g.stroke();
+    g.stroke();g.setLineDash([]);
   });
 }
 // ---- 5 yıllık günlük geçmiş (hist dalı) ----
@@ -819,6 +822,7 @@ function hist(code){
   if(!HP[code])HP[code]=fetch(HIST_URL+encodeURIComponent(code)+'.json?t='+Math.floor(Date.now()/216e5),{cache:'no-store'})
     .then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{
       HV[code]=j&&j.d&&j.d.length>1?j:null; delete HP[code];
+      if(HV[code]&&S.hold[code]&&checkCorp(code)){save();renderAll(false)}
       if(!HV[code])setTimeout(()=>{if(HV[code]===null)delete HV[code]},60000);
       renderDetail();
     });
@@ -832,6 +836,35 @@ function dailyPts(s){
   if(h.d[h.d.length-1]>=dn)out[out.length-1]=[out[out.length-1][0],p]; else out.push([dn*86400,p]);
   return out;
 }
+// Pozisyonun açıldığı an: miktar en son sıfırdan yukarı çıktığında
+function posSince(s){let q=0,t0=null;S.trades.slice().reverse().forEach(t=>{if(t.s!==s)return;if(t.side==='buy'){if(q<=1e-9)t0=t.t;q+=t.q}else q=Math.max(0,q-t.q)});return t0}
+// Elde tutulan varlığın temettü ve bölünmelerini işle (hist dalındaki kayıtlardan)
+function checkCorp(s){
+  const h=HV[s], hold=S.hold[s]; if(!h||!hold||!A(s))return false;
+  const since=posSince(s); if(!since)return false;
+  if(!S.corp)S.corp={}; if(!S.clog)S.clog=[];
+  const today=Math.floor(Date.now()/864e5), evs=(h.dv||[]).map(x=>({k:'div',d:x[0],a:x[1]})).concat((h.sp||[]).map(x=>({k:'split',d:x[0],r:x[1]/x[2]})));
+  let changed=false;
+  evs.sort((a,b)=>a.d-b.d).forEach(e=>{
+    const key=s+':'+e.d+':'+e.k;
+    if(S.corp[key]||e.d*864e5<=since||e.d>today||!S.hold[s])return;
+    S.corp[key]=1; changed=true;
+    const q=S.hold[s].q;
+    if(e.k==='div'){
+      const amt=q*e.a*fx(s); S.cash+=amt; S.divTotal=(S.divTotal||0)+amt;
+      S.clog.unshift({t:Date.now(),d:e.d,s,k:'div',per:e.a,q,amt});
+      toast(`💰 ${s} temettüsü: ${fmtQty(s,q)} × ${fmtNative(s,e.a)} = ${tl(amt)} nakdine eklendi.`); notify('Temettü: '+s,`${tl(amt)} nakdine eklendi.`);
+    } else if(e.r>0&&e.r!==1){
+      S.hold[s].q=roundQ(s,q*e.r)||q*e.r;
+      S.orders.forEach(o=>{if(o.s!==s)return;o.q=roundQ(s,o.q*e.r)||o.q*e.r;o.px/=e.r;if(o.hi)o.hi/=e.r});
+      S.alerts.forEach(x=>{if(x.s===s)x.px/=e.r});
+      S.clog.unshift({t:Date.now(),d:e.d,s,k:'split',r:e.r,q,q2:S.hold[s].q});
+      toast(`✂️ ${s} hissesi bölündü (1'e ${f2.format(e.r)}): ${fmtQty(s,q)} adet ${fmtQty(s,S.hold[s].q)} adet oldu, maliyetin değişmedi.`);
+    }
+  });
+  if(changed)S.clog=S.clog.slice(0,100);
+  return changed;
+}
 function sma(c,n){const o=new Array(c.length).fill(null);let sum=0;for(let i=0;i<c.length;i++){sum+=c[i];if(i>=n)sum-=c[i-n];if(i>=n-1)o[i]=sum/n}return o}
 function rsi(c,n=14){
   const o=new Array(c.length).fill(null); if(c.length<=n)return o;
@@ -839,6 +872,25 @@ function rsi(c,n=14){
   g/=n;l/=n; o[n]=l?100-100/(1+g/l):100;
   for(let i=n+1;i<c.length;i++){const d=c[i]-c[i-1];g=(g*(n-1)+Math.max(d,0))/n;l=(l*(n-1)+Math.max(-d,0))/n;o[i]=l?100-100/(1+g/l):100}
   return o;
+}
+function ema(c,n){const o=new Array(c.length).fill(null),k=2/(n+1);let e=null;for(let i=0;i<c.length;i++){if(c[i]==null)continue;e=e==null?c[i]:c[i]*k+e*(1-k);if(i>=n-1)o[i]=e}return o}
+function bollinger(c,n=20,m=2){const mid=sma(c,n),up=new Array(c.length).fill(null),lo=up.slice();
+  for(let i=n-1;i<c.length;i++){let v=0;for(let j=i-n+1;j<=i;j++)v+=(c[j]-mid[i])**2;const sd=Math.sqrt(v/n);up[i]=mid[i]+m*sd;lo[i]=mid[i]-m*sd}return {mid,up,lo}}
+function macd(c){const a=ema(c,12),b=ema(c,26),l=c.map((_,i)=>a[i]!=null&&b[i]!=null?a[i]-b[i]:null),f=l.findIndex(v=>v!=null);
+  const sg=new Array(c.length).fill(null);if(f>=0){const e=ema(l.slice(f),9);e.forEach((v,i)=>sg[f+i]=v)}return {l,sg,h:l.map((v,i)=>v!=null&&sg[i]!=null?v-sg[i]:null)}}
+function drawBars(cv,vals,colors){
+  const c=prepCanvas(cv); if(!c||vals.length<2)return; const {g,w,h}=c, cw=w-70, n=vals.length;
+  const mx=Math.max(...vals.filter(v=>v!=null).map(Math.abs))||1, neg=vals.some(v=>v<0), z=neg?h/2:h-2, sc=neg?h/2-3:h-6, bw=Math.max(1,(cw-4)/n*0.7);
+  vals.forEach((v,i)=>{if(v==null)return;const x=i/(n-1)*(cw-4)+2;g.fillStyle=colors(i,v);const y=z-v/mx*sc;g.fillRect(x-bw/2,Math.min(y,z),bw,Math.abs(y-z)||1)});
+  return {g,w,h,cw,mx,z,sc};
+}
+function drawMACD(cv,m){
+  const c=prepCanvas(cv); if(!c)return; const {g,w,h}=c, cw=w-70, n=m.l.length; if(n<2)return;
+  const mx=Math.max(...m.l.concat(m.sg,m.h).filter(v=>v!=null).map(Math.abs))||1, Y=v=>h/2-v/mx*(h/2-3), X=i=>i/(n-1)*(cw-4)+2, bw=Math.max(1,(cw-4)/n*0.7);
+  const up=css('--up')+'88', dn=css('--down')+'88';
+  m.h.forEach((v,i)=>{if(v==null)return;g.fillStyle=v>=0?up:dn;const y=Y(v);g.fillRect(X(i)-bw/2,Math.min(y,h/2),bw,Math.abs(y-h/2)||1)});
+  [[m.l,'#14B8A6'],[m.sg,'#F59E0B']].forEach(([a,col])=>{g.strokeStyle=col;g.lineWidth=1.25;g.beginPath();let on=false;a.forEach((v,i)=>{if(v==null){on=false;return}on?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));on=true});g.stroke()});
+  g.font='11px '+css('--font-num');g.fillStyle=css('--muted');g.textBaseline='middle';g.fillText('MACD',cw+6,h/2);
 }
 function prepCanvas(cv){
   const dpr=window.devicePixelRatio||1, w=cv.clientWidth, h=cv.clientHeight;
@@ -920,7 +972,7 @@ function select(s,scroll){
   if(scroll)openSheet();
 }
 let range=5, chartPts=[], chartRsi=null, hovering=false;
-const IND={ma20:false,ma50:true,ma200:false,rsi:true};
+const IND={ma20:false,ma50:true,ma200:false,rsi:true,bb:false,vol:false,macd:false};
 try{Object.assign(IND,JSON.parse(localStorage.getItem('sanal-borsa-gosterge')||'{}'))}catch(e){}
 $('inds').addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;IND[b.dataset.i]=!IND[b.dataset.i];try{localStorage.setItem('sanal-borsa-gosterge',JSON.stringify(IND))}catch(e){}renderDetail()});
 const dmy=t=>new Date(t).toLocaleDateString('tr-TR',{day:'numeric',month:'short',year:'numeric'});
@@ -1020,7 +1072,7 @@ function renderDetail(){
 }
 function renderChart(s){
   const a=A(s), daily=range>5, lbl=v=>(a.cur==='USD'?'$':'')+(v>=1e4?f0.format(v):priceFmt(v));
-  let pts, lines=[], rs=null, note='';
+  let pts, lines=[], rs=null, note='', macdD=null, volD=null;
   if(daily){
     const all=dailyPts(s);
     if(!all){pts=[];note=all===undefined?'Geçmiş fiyatlar yükleniyor…':'Bu varlığın geçmiş fiyatları şu an alınamadı.'}
@@ -1030,12 +1082,19 @@ function renderChart(s){
       const m={ma20:sma(c,20),ma50:sma(c,50),ma200:sma(c,200)}, r=rsi(c);
       [['ma20','#3B82F6'],['ma50','#F59E0B'],['ma200','#A855F7']].forEach(([key,color])=>{if(IND[key])lines.push({v:m[key].slice(k),color})});
       if(IND.rsi)rs=r.slice(k);
+      const bb=bollinger(c), md=macd(c), hv=hist(s), vols=hv&&hv.v?hv.v.concat(all.length>hv.v.length?[0]:[]):null;
+      if(IND.bb)lines.push({v:bb.up.slice(k),color:'#94A3B8',dash:1},{v:bb.lo.slice(k),color:'#94A3B8',dash:1});
+      macdD=IND.macd?{l:md.l.slice(k),sg:md.sg.slice(k),h:md.h.slice(k)}:null;
+      volD=IND.vol&&vols&&vols.some(v=>v>0)?{v:vols.slice(k),c:c.slice(k),c0:c[k-1]!=null?c[k-1]:c[k]}:null;
       // Kısa yorum
       const p=c[c.length-1], L=i=>i[i.length-1], parts=[];
       if(L(m.ma50)!=null){const d=p/L(m.ma50)-1;parts.push(`Fiyat 50 günlük ortalamanın <b class="${cls(d)}">${pct(Math.abs(d)).replace(/^[+−]/,'')} ${d>=0?'üstünde':'altında'}</b>`)}
       if(L(m.ma50)!=null&&L(m.ma200)!=null)parts.push(L(m.ma50)>=L(m.ma200)?'50 günlük ortalama 200 günlüğün üstünde: <b class="up">uzun vadeli eğilim yukarı</b>':'50 günlük ortalama 200 günlüğün altında: <b class="down">uzun vadeli eğilim aşağı</b>');
       const rv=L(r);
       if(rv!=null)parts.push(`RSI ${f0.format(rv)}: `+(rv>=70?'<b class="down">aşırı alım bölgesi</b>, fiyat kısa sürede çok yükseldi':rv<=30?'<b class="up">aşırı satım bölgesi</b>, fiyat kısa sürede çok düştü':'normal bölgede'));
+      if(IND.bb&&L(bb.up)!=null){const pb=(p-L(bb.lo))/(L(bb.up)-L(bb.lo));parts.push(pb>=1?'Fiyat üst Bollinger bandının üstünde: <b class="down">yükseliş çok hızlandı</b>':pb<=0?'Fiyat alt Bollinger bandının altında: <b class="up">düşüş çok hızlandı</b>':`Fiyat Bollinger bantlarının içinde (${pb>=.5?'üst':'alt'} yarıda)`)}
+      if(IND.macd&&L(md.sg)!=null)parts.push(L(md.l)>=L(md.sg)?'MACD sinyal çizgisinin üstünde: <b class="up">ivme yukarı</b>':'MACD sinyal çizgisinin altında: <b class="down">ivme aşağı</b>');
+      if(IND.vol&&vols&&vols.length>21){const lv=vols[hv.v.length-1],av=vols.slice(hv.v.length-21,hv.v.length-1).reduce((x,y)=>x+y,0)/20;if(lv&&av)parts.push(`Son işlem gününün hacmi 20 günlük ortalamanın <b>${f2.format(lv/av)} katı</b>`)}
       note=parts.map(x=>`<span>${x}.</span>`).join('');
       const first=all[0][0], firstAvail=first>all[all.length-1][0]-range*86400+5*86400;
       if(firstAvail)note+=`<span class="muted">Bu varlığın verisi ${dmy(first*1000)} tarihinden başlıyor.</span>`;
@@ -1045,9 +1104,11 @@ function renderChart(s){
   $('inds').hidden=!daily; $('indHelp').hidden=!daily;
   $('inds').querySelectorAll('[data-i]').forEach(b=>b.setAttribute('aria-pressed',!!IND[b.dataset.i]));
   $('indNote').hidden=!daily||!note; $('indNote').innerHTML=note;
-  $('rsiChart').hidden=!rs;
+  $('rsiChart').hidden=!rs; $('macdChart').hidden=!macdD; $('volChart').hidden=!volD;
   drawChart($('assetChart'),pts.map(x=>x[1]),{base:range===1?prevOf(s):null,labels:lbl,lines});
   if(rs)drawRSI($('rsiChart'),rs);
+  if(macdD)drawMACD($('macdChart'),macdD);
+  if(volD){const up=css('--up'),dn=css('--down');const r=drawBars($('volChart'),volD.v,(i)=>((i?volD.c[i]>=volD.c[i-1]:volD.c[0]>=volD.c0)?up:dn)+'99');if(r){r.g.font='11px '+css('--font-num');r.g.fillStyle=css('--muted');r.g.textBaseline='middle';r.g.fillText('Hacim',r.cw+6,r.h/2)}}
   if(!hovering)$('dTime').textContent=daily&&pts.length?dmy(pts[0][0]*1000)+' → bugün':a.c==='Kripto'&&LIVE[s]?'Canlı fiyat (Binance)':dmhm(a.t*1000)+(isOpen(s)?'':' · piyasa kapalı');
 }
 // ---- Ya o zaman alsaydım? ----
@@ -1485,14 +1546,20 @@ function renderBottom(){
   } else {
     const sells=S.trades.filter(t=>t.side==='sell'), wins=sells.filter(t=>t.pl>0).length;
     $('tabNote').textContent=S.trades.length?S.trades.length+' işlem':'';
-    if(!S.trades.length){$('paneT').innerHTML=`<div class="empty">İşlemlerin burada listelenecek.</div>`;return}
+    if(!S.trades.length){$('paneT').innerHTML=`<div class="empty">İşlemlerin burada listelenecek.</div>`+corpTable();return}
     const fees=S.trades.reduce((x,t)=>x+t.fee,0);
-    $('paneT').innerHTML=`<div class="statline"><span>Kapanan satış: <b>${sells.length}</b></span><span>Kârlı satış oranı: <b>${sells.length?f0.format(wins/sells.length*100)+'%':'–'}</b></span><span>Gerçekleşen K/Z: <b class="${cls(S.realized)}">${signed(S.realized,tl)}</b></span><span>Ödenen komisyon: <b>${tl(fees)}</b></span></div>
+    $('paneT').innerHTML=`<div class="statline"><span>Kapanan satış: <b>${sells.length}</b></span><span>Kârlı satış oranı: <b>${sells.length?f0.format(wins/sells.length*100)+'%':'–'}</b></span><span>Gerçekleşen K/Z: <b class="${cls(S.realized)}">${signed(S.realized,tl)}</b></span><span>Ödenen komisyon: <b>${tl(fees)}</b></span>${S.divTotal?`<span>Alınan temettü: <b class="up">${tl(S.divTotal)}</b></span>`:''}</div>
     <div class="tblwrap"><table><thead><tr><th>Tarih</th><th>İşlem</th><th>Varlık</th><th>Miktar</th><th>Fiyat</th><th>Komisyon</th><th>Tutar</th><th>K/Z</th><th>Not</th></tr></thead><tbody>${
       S.trades.slice(0,300).map((t,i)=>{const d=new Date(t.t);
         return `<tr><td class="t">${d.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'})} ${d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}</td><td><span class="badge ${t.side}">${t.via&&t.via!=='Piyasa'?t.via.toLocaleUpperCase('tr-TR')+' ':''}${t.side==='buy'?'ALIŞ':'SATIŞ'}</span></td><td><b>${t.s}</b></td><td>${fmtQty(t.s,t.q)}</td><td>${tl(t.p)}</td><td>${tl(t.fee)}</td><td>${tl(t.total)}</td><td class="${t.pl!=null?cls(t.pl):'muted'}">${t.pl!=null?signed(t.pl,tl):'–'}</td><td class="nt" data-i="${i}" title="Notu düzenlemek için dokun">${t.note?esc(t.note):'+ not ekle'}</td></tr>`}).join('')
-    }</tbody></table></div>`;
+    }</tbody></table></div>`+corpTable();
   }
+}
+function corpTable(){
+  if(!S.clog||!S.clog.length)return '';
+  return `<div class="sect">Temettüler ve bölünmeler</div><div class="tblwrap"><table><thead><tr><th>Hak kullanım günü</th><th>Varlık</th><th>Olay</th><th>Ayrıntı</th><th>Tutar</th></tr></thead><tbody>${
+    S.clog.map(c=>`<tr><td class="t">${new Date(c.d*864e5).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'})}</td><td class="t"><b>${esc(c.s)}</b></td><td class="t">${c.k==='div'?'Temettü':'Bölünme (bedelsiz)'}</td><td>${c.k==='div'?fmtQty(c.s,c.q)+' × '+(A(c.s)?fmtNative(c.s,c.per):c.per):fmtQty(c.s,c.q)+' → '+fmtQty(c.s,c.q2)+' adet'}</td><td class="${c.k==='div'?'up':'muted'}">${c.k==='div'?'+'+tl(c.amt):'–'}</td></tr>`).join('')
+  }</tbody></table></div><p class="muted" style="font-size:12px;margin:6px 14px 10px">Temettüler vergi kesintisi olmadan, hak kullanım günü elindeki adede göre eklenir.</p>`;
 }
 $('paneT').addEventListener('click',e=>{
   const td=e.target.closest('td.nt');if(!td||td.querySelector('input'))return;
@@ -1562,7 +1629,7 @@ function renderAll(flash){
   for(const s in S.hold)if(A(s))S.hold[s].last=tlPrice(s);
   renderMarkets();renderSummary();renderList(flash);renderDetail();updateEst();renderBottom();
 }
-function onData(){ if(D){buildList();checkOrders();checkAlerts();snapshot(false);weeklyNotice()} renderAll(true) }
+function onData(){ if(D){buildList();checkOrders();checkAlerts();Object.keys(S.hold).forEach(s=>{if(A(s)&&!A(s).idx&&hist(s))checkCorp(s)});snapshot(false);weeklyNotice()} renderAll(true) }
 $('retry').addEventListener('click',()=>{loadData().then(loadCrypto)});
 window.addEventListener('resize',()=>{renderSummary();renderDetail()});
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>renderAll(false));

@@ -1,5 +1,5 @@
 // Uygulamayı çevrimdışı da açılabilir kılan basit önbellek
-const CACHE = 'sanal-borsa-v9';
+const CACHE = 'sanal-borsa-v10';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
