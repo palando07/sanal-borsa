@@ -1,7 +1,8 @@
 """Her varlığın 5 yıllık günlük kapanış fiyatlarını hist/<KOD>.json dosyalarına yazar.
 
 Kullanım: python3 scripts/fetch_history.py hist
-Dosya biçimi: {"d": [gün numarası (1970'ten beri)], "c": [kapanış]}; uygulama grafikler,
+Dosya biçimi: {"d": [gün numarası (1970'ten beri)], "c": [kapanış], "v"?: [hacim],
+"dv"?: [[gün, temettü/hisse]], "sp"?: [[gün, pay, payda]]}; uygulama grafikler,
 hareketli ortalama/RSI ve "Ya o zaman alsaydım?" hesabı için kullanır.
 """
 import json
@@ -18,24 +19,32 @@ FAILS = []
 
 
 def daily(sym):
+    """Günlük kapanış, hacim ve kurumsal olaylar (temettü, bölünme)."""
     for host in ("query1", "query2"):
-        url = f"https://{host}.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}?range=5y&interval=1d"
+        url = (f"https://{host}.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(sym)}"
+               "?range=5y&interval=1d&events=div%7Csplit")
         try:
             req = urllib.request.Request(url, headers={"User-Agent": UA})
             with urllib.request.urlopen(req, timeout=20) as r:
                 res = json.load(r)["chart"]["result"][0]
             off = res["meta"].get("gmtoffset", 0)
-            closes = res["indicators"]["quote"][0].get("close") or []
+            q = res["indicators"]["quote"][0]
+            closes, vols = q.get("close") or [], q.get("volume") or []
             out = {}
-            for t, c in zip(res.get("timestamp") or [], closes):
+            for i, (t, c) in enumerate(zip(res.get("timestamp") or [], closes)):
                 if c is not None:
-                    out[(t + off) // 86400] = c  # aynı güne düşen son değer kalır
-            return out
+                    v = vols[i] if i < len(vols) else None
+                    out[(t + off) // 86400] = (c, v or 0)  # aynı güne düşen son değer kalır
+            ev = res.get("events") or {}
+            divs = sorted([(x["date"] + off) // 86400, x["amount"]] for x in (ev.get("dividends") or {}).values())
+            splits = sorted([(x["date"] + off) // 86400, x["numerator"], x["denominator"]]
+                            for x in (ev.get("splits") or {}).values() if x.get("denominator"))
+            return {"s": out, "dv": divs, "sp": splits}
         except Exception as e:  # noqa: BLE001
             err = e
             time.sleep(0.5)
     FAILS.append(f"{sym}: {err}")
-    return {}
+    return {"s": {}, "dv": [], "sp": []}
 
 
 def sig(v):
@@ -53,7 +62,8 @@ def main(outdir):
               ("BRENT", "BZ=F"), ("XAU", "GC=F"), ("XAG", "SI=F")]
 
     with ThreadPoolExecutor(max_workers=6) as ex:
-        series = dict(zip([c for c, _ in specs], ex.map(lambda s: daily(s[1]), specs)))
+        raw = dict(zip([c for c, _ in specs], ex.map(lambda s: daily(s[1]), specs)))
+    series = {c: {d: cv[0] for d, cv in r["s"].items()} for c, r in raw.items()}
 
     # Gram altın / gümüş: ons × o günkü dolar kuru / 31,10
     usd = series.get("USD") or {}
@@ -74,10 +84,23 @@ def main(outdir):
         if len(s) < 5:
             continue
         ds = sorted(s)
+        out = {"d": ds, "c": [sig(s[d]) for d in ds]}
+        r = raw.get(code)
+        if r:
+            if any(v for _, v in r["s"].values()):
+                out["v"] = [int(r["s"][d][1]) if d in r["s"] else 0 for d in ds]
+            if r["dv"]:
+                out["dv"] = [[d, sig(a)] for d, a in r["dv"]]
+            if r["sp"]:
+                out["sp"] = r["sp"]
         with open(os.path.join(outdir, code + ".json"), "w") as f:
-            json.dump({"d": ds, "c": [sig(s[d]) for d in ds]}, f, separators=(",", ":"))
+            json.dump(out, f, separators=(",", ":"))
         n += 1
 
+    if os.environ.get("GITHUB_ACTIONS"):
+        nd = sum(1 for r in raw.values() if r["dv"])
+        ns = sum(1 for r in raw.values() if r["sp"])
+        print(f"::notice::{n} dosya; {nd} varlıkta temettü, {ns} varlıkta bölünme kaydı")
     if FAILS and os.environ.get("GITHUB_ACTIONS"):
         print(f"::warning::{len(FAILS)} sembolün geçmişi alınamadı. İlki: {FAILS[0]}")
     if n < 10:
